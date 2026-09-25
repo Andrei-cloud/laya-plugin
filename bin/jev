@@ -1,0 +1,4 @@
+#!/bin/sh
+# D6 dual naming: the alias lives at the BINARY level — `jev <cmd>` is
+# literally `laya <cmd>`, identical stdin/stdout JSON contracts (spec-v2 §2).
+exec "$(dirname "$0")/laya" "$@"

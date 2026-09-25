@@ -1,0 +1,10 @@
+{
+  "name": "laya-decision-opencode",
+  "version": "0.2.0",
+  "description": "Laya decision plugin for OpenCode v2: permission.ask guardrail via the warm Laya daemon question API (advisory raises allow->ask; enforce maps block->deny; bridge down = no-op).",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  }
+}

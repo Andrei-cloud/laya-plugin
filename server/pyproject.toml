@@ -1,0 +1,14 @@
+[project]
+name = "laya-decision-plugin"
+version = "0.1.0"
+description = "Unified harness plugin exposing the Laya combined Core AI decision asset (MCP stdio + HTTP bridge)."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    # PyPI, Anthropic's official MCP SDK (audited before install; versions pinned in uv.lock)
+    "mcp>=1.2,<2",
+    "transformers>=4.40",
+    "numpy>=1.26",
+    "coreai-core==1.0.0b2",
+]
+
+[tool.uv]

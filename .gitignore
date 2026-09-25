@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+*.err
+*.out
+exps.err
+http.out
+diag_latency*.py
+probe_*.py
+# machine-local convenience symlink (-> a local model assets dir); the tree
+# resolves assets via $LAYA_ASSETS with sane defaults, never a tracked path
+assets
+logs/
+runs_warm.log
+
+# benchmark working material: outputs are never tracked; the harness code
+# (bench/*.py) IS part of the solution and is tracked.
+bench/*
+!bench/*.py
+
+# local scratch / IDE
+.DS_Store
+.pytest_cache/

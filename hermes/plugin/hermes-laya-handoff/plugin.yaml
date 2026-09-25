@@ -1,0 +1,24 @@
+# Honest manifest: declares every seam this plugin registers (upstream's
+# handoff manifest drifted; we do not copy that).
+name: hermes-laya-handoff
+version: 0.2.0
+description: Carry the thread of one session into the next - bare word "handoff" writes a model-free whole-dialogue capsule (1200-word tail + Recovery block), the next fresh session receives it once. 36 h max age; confidential marker file scrubs capsules.
+author: Laya
+license: Apache-2.0
+manifest_version: 2
+requires_env: []          # fully local; writer is the host's own aux model
+aliases:
+  - hermes-handoff        # interop alias (D6)
+provides_tools: []
+provides_hooks:
+  - pre_gateway_dispatch  # bare-word trigger (never answers for the gateway)
+  - pre_llm_call          # one-shot capsule delivery into the next session
+  # Honest-manifest note (schema, not drift): the manifest vocabulary has
+  # no fields for slash commands or prompt sections (provides_hooks is
+  # VALID_HOOKS-only). We additionally register via ctx seams with no
+  # manifest slot: /handoff (skipped when the built-in owns the name),
+  # /wrapup fallback, one system_prompt_section.
+config_schema:
+  inject: {type: bool, description: "deliver pending capsules (default on)"}
+  confidential: {type: bool, description: "scrub capsule text (marker file is authority)"}
+tags: [laya, handoff, capsule, session, context]

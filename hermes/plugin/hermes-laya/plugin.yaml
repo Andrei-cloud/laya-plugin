@@ -1,0 +1,46 @@
+# Honest manifest: declares EVERY tool, hook and middleware this plugin
+# actually registers (the upstream manifest drifted — 5 declared vs 6
+# registered, middleware omitted from provides_hooks; we do not copy that).
+# External names are dual-namespace by user decision D6; internal modules and
+# functions are laya-named (D7) — "jev_*" entries below are interop alias
+# registrations of the SAME handlers, not separate code.
+name: hermes-laya
+version: 0.2.0
+description: Laya takes the cheap decisions on-device (Core AI) - model routing, skill selection, memory filtering, compaction selection, GUI and browser action choice, pre-exec safety guard. Speaks the Jev-compatible question API; every name dual-registered.
+author: Laya
+license: Apache-2.0
+homepage: https://huggingface.co/AndyInQtr/laya-decision-plugin
+manifest_version: 2
+requires_env: []          # fully local; no API key exists to require
+aliases:
+  - hermes-jev            # co-install/dispatch interop (first-wins on names)
+provides_tools:
+  - laya_memory_filter
+  - laya_search
+  - laya_compact_select
+  - laya_supervise
+  - laya_escalate
+  - laya_choose_action
+  - laya_guard            # Laya-only: no Jev equivalent
+  - jev_memory_filter     # alias registrations (D6), same handlers
+  - jev_search
+  - jev_compact_select
+  - jev_supervise
+  - jev_escalate
+  - jev_choose_action
+provides_hooks:
+  - pre_llm_call
+  - transform_llm_output
+  # Honest-manifest note (schema, not drift): Hermes' manifest vocabulary
+  # has NO fields for middleware / slash commands / prompt sections —
+  # provides_hooks is VALID_HOOKS-only (anything else is a doctor ERROR).
+  # We additionally register, via ctx seams that carry no manifest slot:
+  #   llm_request middleware (the model swap), /laya + /jev commands,
+  #   one system_prompt_section. Declared here in the only way the schema
+  #   allows. The upstream manifest this one is modeled on omits even more.
+config_schema:
+  routing: {type: str, description: "off | shadow | on"}
+  skills: {type: str, description: "off | on"}
+  notice: {type: str, description: "off | on"}
+  handoff: {type: str, description: "off | on"}
+tags: [laya, jev-compatible, routing, memory, compaction, computer-use, safety, core-ai]

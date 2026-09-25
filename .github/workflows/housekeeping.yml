@@ -1,0 +1,23 @@
+name: housekeeping
+# D9 code of conduct (docs/HOUSEKEEPING.md), mechanically enforced:
+# no .out/.log/.err files may ever be tracked; no scratch probes at repo root.
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+
+jobs:
+  housekeeping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: no log/out/err tracked
+        run: |
+          bad=$(git ls-files | grep -E '\.(log|out|err)$' || true)
+          if [ -n "$bad" ]; then echo "FORBIDDEN tracked files:"; echo "$bad"; exit 1; fi
+      - name: no probe/diag scratch at root
+        run: |
+          bad=$(git ls-files --directory | grep -E '^(probe_|diag_|test_warm_)' || true)
+          if [ -n "$bad" ]; then echo "scratch files at repo root:"; echo "$bad"; exit 1; fi
+      - name: vendored plugin lib in sync with server/
+        run: python3 scripts/sync_plugin_lib.py --check

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec "${LAYA_PYTHON:-python3}" "$(dirname "$0")/../server/laya_cli.py" "$@"

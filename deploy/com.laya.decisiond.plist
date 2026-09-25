@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LaunchAgent TEMPLATE — committed WITHOUT absolute user paths.
+     Install with scripts/install_daemon.sh, which substitutes
+     __LAYA_PYTHON__, __LAYA_PLUGIN_REPO__, __LAYA_ASSETS__, __LAYA_SOURCE__,
+     __LAYA_PORT__ and __LAYA_LOG__ for this machine's real paths and writes
+     the result to ~/Library/LaunchAgents/com.laya.decisiond.plist.
+     macOS only (Core AI / Apple Silicon). -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.laya.decisiond</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__LAYA_PYTHON__</string>
+    <string>-m</string><string>server.laya_http_mcp</string>
+    <string>--port</string><string>__LAYA_PORT__</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>__LAYA_PLUGIN_REPO__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LAYA_ASSETS</key>
+    <string>__LAYA_ASSETS__</string>
+    <key>LAYA_SOURCE</key>
+    <string>__LAYA_SOURCE__</string>
+    <key>LAYA_UNIT</key><string>gpu</string>
+    <key>LAYA_AUDIT</key>
+    <string>__LAYA_PLUGIN_REPO__/bench/audit-daemon.jsonl</string>
+    <key>USE_TF</key><string>0</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>5</integer>
+  <key>StandardOutPath</key>
+  <string>__LAYA_LOG__</string>
+  <key>StandardErrorPath</key>
+  <string>__LAYA_LOG__</string>
+</dict>
+</plist>

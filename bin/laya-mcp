@@ -1,0 +1,13 @@
+#!/bin/sh
+# Launch the Laya decision MCP server (stdio) with its package root on path.
+# Hermes/opencode spawn stdio MCP servers with an unpredictable cwd; this
+# launcher is cwd-proof AND machine-proof: the repo location comes from
+# $0, the interpreter from $LAYA_PYTHON (set it; a stdio MCP env often has
+# no usable python3 on PATH). Required env: LAYA_ASSETS, LAYA_SOURCE
+# (engine fail-fast applies — the server refuses to start without them).
+set -e
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$HERE" || exit 1
+PY="${LAYA_PYTHON:-python3}"
+[ -x "$PY" ] || { echo "laya-mcp: LAYA_PYTHON not executable: $PY" >&2; exit 1; }
+exec "$PY" -m server.laya_mcp "$@"
