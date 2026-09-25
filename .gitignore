@@ -17,6 +17,9 @@ runs_warm.log
 bench/*
 !bench/*.py
 !bench/README.md
+!bench/tasks.json
+# one-off sweep-resume helper (session-scoped, not part of the rig)
+bench/_continue_sweep.py
 
 # local scratch / IDE
 .DS_Store
