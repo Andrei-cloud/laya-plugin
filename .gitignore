@@ -16,7 +16,13 @@ runs_warm.log
 # (bench/*.py) IS part of the solution and is tracked.
 bench/*
 !bench/*.py
+!bench/README.md
 
 # local scratch / IDE
 .DS_Store
 .pytest_cache/
+
+# run outputs from acceptance/sandbox drills
+bench/sandbox*/
+bench/runs/
+bench/audit-arm*.jsonl
