@@ -218,9 +218,32 @@ def eval_mail_uc(eng, limit):
     return ok, n, lat, misses, {}
 
 
+def eval_supervise(eng, limit):
+    """Held-out supervise pack through the REAL use case U.supervise_run
+    (noul readings + fact-override + never-escalate-blind rails). Gold is the
+    POST-RAIL action+alert, so a head that reads states weakly shows up as the
+    rails failing to land. No ft_sup head yet -> measures the base chain."""
+    p = os.path.join(HERE, "evalpacks", "supervise.jsonl")
+    if not os.path.exists(p):
+        return 0, 0, [], [], {}
+    ok, lat, misses, n = 0, [], [], 0
+    for r in rows(p, limit):
+        ans, ms = timed(U.supervise_run, eng, r["facts"])
+        lat.append(ms)
+        n += 1
+        got, alert = ans.get("action"), ans.get("alert")
+        if got == r["gold_action"] and alert == r["gold_alert"]:
+            ok += 1
+        else:
+            misses.append({"state": r["facts"].get("last_output", "")[:80],
+                           "gold": r["gold_action"], "got": got,
+                           "alert_got": alert, "alert_gold": r["gold_alert"]})
+    return ok, n, lat, misses, {}
+
+
 EVALS = {"guardrail": eval_guardrail, "lang": eval_lang,
          "skill": eval_skill, "triage": eval_triage, "mail": eval_mail,
-         "mail_uc": eval_mail_uc}
+         "mail_uc": eval_mail_uc, "supervise": eval_supervise}
 
 
 def main():
