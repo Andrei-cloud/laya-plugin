@@ -197,8 +197,30 @@ def eval_mail(eng, limit):
         1 for m in misses if m["got"] is None)) / max(1, n), 4)}
 
 
+def eval_mail_uc(eng, limit):
+    """G5: the same held-out pack through the REAL use case U.mail_sort
+    (decode-before-screen + injection flag + unsure->attention rails),
+    not just the raw question wire. lane None == no action."""
+    p = os.path.join(HERE, "evalpacks", "mail.jsonl")
+    if not os.path.exists(p):
+        return 0, 0, [], [], {}
+    ok, lat, misses, n = 0, [], [], 0
+    for r in rows(p, limit):
+        ans, ms = timed(U.mail_sort, eng, r["state"])
+        lat.append(ms)
+        n += 1
+        got = ans.get("lane")
+        if got == r["gold"]["lane"]:
+            ok += 1
+        else:
+            misses.append({"state": r["state"][:90], "gold": r["gold"]["lane"],
+                           "got": got, "flags": ans.get("flags")})
+    return ok, n, lat, misses, {}
+
+
 EVALS = {"guardrail": eval_guardrail, "lang": eval_lang,
-         "skill": eval_skill, "triage": eval_triage, "mail": eval_mail}
+         "skill": eval_skill, "triage": eval_triage, "mail": eval_mail,
+         "mail_uc": eval_mail_uc}
 
 
 def main():
