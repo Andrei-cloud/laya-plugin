@@ -14,10 +14,10 @@ filled ONLY from committed artifacts (each row cites its source). Floor for
 | 3 | skill `skill_select` | ft_skill4_ppo (4) | 0.416 wire (synth_skill_v2 gold+none, n=161); head offline 0.615@100% cov (GO_GATE r15) | ack-gate + stage-2 rails | 35/172 | routing task; rig tool-route scenario passes | ✅ shipped (wire gap = rails, not head — see note) |
 | 4 | triage `triage_message` | ft_triage5 (champion) | 0.375 wire → **0.625 head-level** (authored pack, n=40) | — | — | — | 🔁 loop closed at 0.625 (r3 relabel +0.075; r6 PPO-on-route +0.05; r7 trust-region tie — residual gap = oracle noise, teacher's own pack 0.700 caps end-to-end; gate ≥0.85 unwinnable vs oracle, documented) |
 | 5 | mail_sort `mail_sort` | ft_mail8 (champion) | 0.70 acc / 0.95 cov (analyst pack n=20; teacher ceiling 0.95; trajectory .45→.55→.65→.60→.50→.60→.70→.65→.60) | 0.95 | pending G5 | pending | 🔁 loop closed at champion (r17 register law x3); pack expansion vs ship = user decision |
-| 6 | supervise_run | — | — | — | — | — | 🔜 FT planned (USECASE-RESEARCH) |
-| 7 | rerank_noul | — | — | — | — | — | 🔜 FT planned |
-| 8 | compact_context | — | — | — | — | — | 🔜 FT planned |
-| 9 | choose_action | — | — | — | — | — | 🔜 FT planned |
+| 6 | supervise_run | base (no ft head) | **0.607** (analyst pack n=28, post-rail action+alert; p50 74ms) | — | — | — | 🔜 baseline measured 2026-09-26; FT candidate (facts→action = triage-family recipe) |
+| 7 | rerank_noul | base noul (no ft head) | **0.000** (pack n=10; rel-noul never clears .5 rail → empty keep-sets; near-dupe over-fire once) | — | — | — | 🔜 baseline measured — calibration wall, FT candidate (noul yes/no recipe) |
+| 8 | compact_context | base (no ft head) | **0.000** (pack n=10; keep/drop conf under .7 floor on most gold-keep turns) | — | — | — | 🔜 baseline measured — calibration wall, FT candidate (per-turn keep/drop) |
+| 9 | choose_action | base (no ft head) | **0.550** (GUI-step pack n=20; p50 15ms) | — | — | — | 🔜 baseline measured; FT candidate (action-slate bandit, tool_route PPO recipe) |
 | 10 | ladder_plan | — | — | — | — | — | 🔜 FT planned |
 | 11 | plan_request | none by design | n/a (rails + TEXT_MODEL) | n/a | n/a | n/a | rails-only; e2e bench planned |
 | 12 | ack_gate (local) | none by design | local rule, no engine call | n/a | 0 | free tier proven (r15) | ✅ by-design |

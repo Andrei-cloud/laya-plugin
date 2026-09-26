@@ -31,7 +31,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "server"))
-OUT = os.path.join(HERE, "runs", "usecase_eval.json")
+OUT = os.environ.get("USECASE_EVAL_OUT") or os.path.join(HERE, "runs", "usecase_eval.json")
 LAYA_EVAL = os.path.expanduser("~/Developer/ai/laya/eval/datasets")
 
 import laya_usecases as U           # noqa: E402
