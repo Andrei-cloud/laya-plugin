@@ -17,7 +17,7 @@ RUNS = os.path.join(HERE, "runs")
 GTAGS = ("q36", "q05", "q38")
 
 out = {}
-for cell_dir in sorted(glob.glob("/tmp/tb-q3*-base") + glob.glob("/tmp/tb-q3*-laya")):
+for cell_dir in (sorted(glob.glob("/tmp/tb-q*-base") + glob.glob("/tmp/tb-q*-laya"))):
     base = os.path.basename(cell_dir)          # tb-q36-base
     gtag, arm = base[3:].rsplit("-", 1)
     if arm not in ("base", "laya") or gtag not in GTAGS:
