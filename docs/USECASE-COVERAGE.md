@@ -81,7 +81,7 @@ head-finetune-pipeline apply verbatim)
 
 ## Execution order (GPU-fair: one device user at a time)
 1. [DONE 2026-09-26] gemma rig sweep 48/48 (replaces removed q05) → table +
-   verdict in bench/runs/external-20260926/REPORT.md §1. Key finding:
+   verdict in bench/reports/external-20260926/REPORT.md §1. Key finding:
    tool-exposed laya arm engages 0/12 on gemma (model-independent failure);
    only the guided arm (guaranteed engagement) is fully compliant.
 2. [next] full `eval_usecases.py` run (zero GPU load) — baseline wire accuracies

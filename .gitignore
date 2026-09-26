@@ -33,3 +33,6 @@ bench/_continue_sweep.py
 bench/sandbox*/
 bench/runs/
 bench/audit-arm*.jsonl
+
+# evidence reports (curated, small) are tracked under bench/reports/
+!bench/reports/
