@@ -84,7 +84,14 @@ head-finetune-pipeline apply verbatim)
    verdict in bench/reports/external-20260926/REPORT.md §1. Key finding:
    tool-exposed laya arm engages 0/12 on gemma (model-independent failure);
    only the guided arm (guaranteed engagement) is fully compliant.
-2. [next] full `eval_usecases.py` run (zero GPU load) — baseline wire accuracies
+2. [DONE 2026-09-26] full `eval_usecases.py` run at zero GPU load. Honest
+   baselines (after fixing two wire-routing bugs — lang slate unknown to
+   `_match_slate` rode chain-0 at chance; unknown route_task laundered as
+   529): guardrail 0.315 exact (red-line at floor: 1/91; 15 sub-floor allows
+   all escalate), lang 0.829 (ft_lang chain), skill 0.416 (ack-gate kills
+   20/111 gold rows + stage-2 noul vetoes; head offline-verified), triage
+   0.375 (now/today confusion — FT candidate), mail 0.250 (pre-FT chain-0,
+   coverage 0.65). Artifacts: bench/reports/external-20260926/usecase_eval_baseline.json.
 3. FT head #1 mail_sort: harvest→train→regress→combine→bench
 4. FT heads #2–#6, same pipeline, one at a time
 5. consolidated scorecard → `research-paper-writing`
