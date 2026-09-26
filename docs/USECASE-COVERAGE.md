@@ -80,9 +80,40 @@ head-finetune-pipeline apply verbatim)
    FT gate verdict → single table (model + plugin) — the paper's Table 1.
 
 ## Execution order (GPU-fair: one device user at a time)
-1. [running] gemma rig sweep (replaces removed q05) → rig retest complete
-2. eval-pack generator for the 4 existing-head use cases (CPU) → rig bench
-   extension runs (GPU)
+1. [DONE 2026-09-26] gemma rig sweep 48/48 (replaces removed q05) → table +
+   verdict in bench/runs/external-20260926/REPORT.md §1. Key finding:
+   tool-exposed laya arm engages 0/12 on gemma (model-independent failure);
+   only the guided arm (guaranteed engagement) is fully compliant.
+2. [next] full `eval_usecases.py` run (zero GPU load) — baseline wire accuracies
 3. FT head #1 mail_sort: harvest→train→regress→combine→bench
 4. FT heads #2–#6, same pipeline, one at a time
 5. consolidated scorecard → `research-paper-writing`
+
+## Round spec — mail_sort (ft_mail), pre-registered BEFORE any result
+
+Corpus: `eval/make_synth_mail.py` (teacher-golded, dual-blind verified,
+unique session ids, faces: personal/work/promo/sales/spam/injection/
+multilingual/obfuscated). Intake via `make_ft_split.py` open-class policy
+(train/val/open_holdout only; frozen 239 test bit-identical — diff the
+per-bucket manifest against the previous commit, assert equality).
+
+Gates (all must hold to promote; any miss = VOID or NO-GO as marked):
+- G1 held-out pack: `scripts/eval_mail.py` ft vs base — lane acc >= 0.85
+  AND coverage >= 0.80 at floor 0.7 (base is expected near chance: foreign
+  slate rides chain-0 by the chain rule).
+- G2 no-regression: frozen 239 test + adversarial_guard + adversarial_guard2
+  via the standard `eval_routed.py`/`eval_adversarial.py` — every EXISTING
+  head's numbers must be bit-comparable to GO_GATE r15 (task_filter keeps
+  the mail round specialist; regressions = VOID round, root-cause first).
+- G3 schema contract: dry-run the trainer row-builder over every split row
+  (30-second whole-corpus check) BEFORE launching the round.
+- G4 combine: new chain appended to `HEADS_ORDER` +
+  `TASK_ROUTE["mail_sort"]=<idx>` in `src/laya_port/combined.py`, rebuild
+  via `scripts/build_aimodel_combined.py` into a NEW release dir, daemon
+  restart + `/health` warm + `probe_live_m1.py` all-pass + latency bars.
+- G5 wire bench: daemon-side `eval_usecases.py --only mail` (pack scores
+  through the REAL /v1/laya wire, not only the Python forward).
+
+Promotion note: the mail head is choice-only (no act/escalate product) —
+SFT-first; PPO-after-warm only if val acc >= 0.9 but held-out coverage <
+0.80 (PPO recipe exists to buy coverage, per r15).
