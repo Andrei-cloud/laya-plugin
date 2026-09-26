@@ -124,3 +124,11 @@ Gates (all must hold to promote; any miss = VOID or NO-GO as marked):
 Promotion note: the mail head is choice-only (no act/escalate product) —
 SFT-first; PPO-after-warm only if val acc >= 0.9 but held-out coverage <
 0.80 (PPO recipe exists to buy coverage, per r15).
+
+ROUND 1 VERDICT (2026-09-26): NO-GO. G1 measured 0.45/0.65 (ft_mail, T=1.0
+after coverage-aware refit) vs base 0.25/0.50 — signal, below gate. Raw-T1
+probe separated the causes: lane argmax 0.67 val / 0.70 pack (no
+generalization cliff; trainer val_acc 0.821 was a token-row averaging
+artifact) + NLL temp 2.742 flattened the head under the floor. Round 2
+(corpus x3, warm continuation from ft_mail, temp refit in-pipeline) is the
+volume lever. Full ledger: docs/FINETUNE.md r16 (laya repo).
