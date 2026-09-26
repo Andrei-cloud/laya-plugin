@@ -129,7 +129,7 @@ def eval_skill(eng, limit):
         none_rows, min(len(none_rows), (limit or 100) // 2))
     ok, lat, misses, n = 0, [], [], 0
     for r in picked:
-        slate = list(r["questions"]["skill"]["criteria"])
+        slate = r["questions"]["skill"]["criteria"]  # {name: desc} — skill_select wants the dict
         ans, ms = timed(U.skill_select, eng, r["state"], slate)
         lat.append(ms)
         n += 1
