@@ -40,6 +40,32 @@ the decision classes, label taxonomies, calibration practices).
 ## ladder (readiness noul)
 - Self-escalation/Bayesian threshold work (same anchor as supervise).
 
+## Public mail-corpus survey (round-9 lever; licenses checked 2026-09-26)
+
+Searched HF/Kaggle for real-mail datasets to buy the authentic human register
+that synthetic faces could not produce (r1-r8 evidence: register transfer
+dominates volume). Decided intake rule: source golds are NEVER copied into
+training — lanes are always teacher-dual-blind relabeled under the plugin's
+product definitions; pack-collision filter stays on; only permissive licenses
+enter.
+
+| dataset | size | license | verdict |
+|---|---|---|---|
+| corbt/enron-emails (raw parquet) | 493k rows / 493 MB | pdcl (public domain) | **IN** — raw human-typed bodies; the register source (172k after 1-40-word terse filter) |
+| SetFit/enron_spam | 11k | apache-2.0 | **IN** — spam/ham pairs, same corpus family |
+| imnim/multiclass-email-classification | 14k | mit | **IN** — sales/support/general/updates labels ≈ our lanes |
+| ucirvine/sms_spam | 5.6k | CC-BY-NC-4.0 | **OUT** — non-commercial; shipped product model can't train on it |
+| spamassassin public corpora | ~1.4k raw .eml | no license stated | **OUT** — unclear license; not worth the risk at n=1.4k |
+| enronarchive/mail | parquet-only, uncounted | pdcl | deferred (same family as corbt; no extra yield) |
+| kaggle phish sets (PhishIQ, spam-dataset-2022, phish-lmd) | various | mostly CC-BY/CC0 but URL-scraped, not prose | **OUT** — register is subject-line bait, not message bodies; wrong lever |
+
+Harvest yield (round 9): 1421 candidates -> 995 kept after dual-blind
+(426 disagreements dropped — the update<->needs_reply boundary is genuinely
+hard even for the teacher; those disagreements are the hard cases, and their
+survivors carry the signal). Lanes: needs_reply 473 / updates 403 / spam 111 /
+promotional 8. No sales class exists in Enron-era business mail — the
+sales<->spam edge must keep coming from synthetic faces.
+
 ## Method notes carried from the model repo (do not relearn the hard way)
 - Iron gates in `head-finetune-pipeline` skill apply verbatim: warm-start
   continuation, schema contract diff before scaling, per-row unique session
