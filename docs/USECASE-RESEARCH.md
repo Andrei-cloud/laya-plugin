@@ -66,6 +66,32 @@ survivors carry the signal). Lanes: needs_reply 473 / updates 403 / spam 111 /
 promotional 8. No sales class exists in Enron-era business mail — the
 sales<->spam edge must keep coming from synthetic faces.
 
+## Public triage-corpus survey (triage FT round; licenses checked 2026-09-26)
+
+Same intake rule as mail: source golds NEVER copied — every label is
+teacher-dual-blind under the plugin's product definitions, pack rows excluded,
+permissive licenses only.
+
+| dataset | size | license | verdict |
+|---|---|---|---|
+| Dipe00/…enron…-llama2-7b_finetuning | 1,234 mail w/ Subject+Body | apache-2.0 | **IN** — real mail prose on the urgency axis; its 0-5 Urgency column is NOT copied, only used to seed sampling |
+| mr-kush/misclassified-urgency | 1,940 | apache-2.0 | **OUT** — Nepali grievance text, wrong language/register for the pack |
+| Tobi-Bueck/customer-support-tickets | 20k+ | cc-by-nc-4.0 | **OUT** — non-commercial |
+| bitext customer-support chatbot | 27k | cdla-sharing-1.0 | **OUT** — bot-side utterances (replies), not inbound messages; wrong side of the wire |
+| aadilsayad/email-intent-classification | small | NO license | **OUT** — unlicensed |
+| faraon314/tech-support | README only | mit | **OUT** — no data files |
+| WOMAD reaction-prediction (needs_reply ≈ needs_human noul) | — | — | **OUT** — not on HF under any findable org; would need direct Zimring download, deferred |
+
+Rubric bug caught pre-training (documented in the generator): the first
+triage corpus draft taught an invented urgency scale
+(later|today|tonight|right-now|overdue) instead of the wire's
+URGENCY_LEVELS = none|later|today|right-now|deadline — and additionally
+stored the question as type "score" while the engine sends the head a
+"choice" rendering ("i of N-1"), which build_sequence bakes into the prompt
+string. Both fixed: corpus now stores the exact rendered choice; corpus
+purged and re-harvested. This is the mail program's register law applied to
+the question level: the head must train on the string the daemon sends.
+
 ## Method notes carried from the model repo (do not relearn the hard way)
 - Iron gates in `head-finetune-pipeline` skill apply verbatim: warm-start
   continuation, schema contract diff before scaling, per-row unique session
