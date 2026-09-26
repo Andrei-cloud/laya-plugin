@@ -132,3 +132,18 @@ generalization cliff; trainer val_acc 0.821 was a token-row averaging
 artifact) + NLL temp 2.742 flattened the head under the floor. Round 2
 (corpus x3, warm continuation from ft_mail, temp refit in-pipeline) is the
 volume lever. Full ledger: docs/FINETUNE.md r16 (laya repo).
+
+ROUND 2 VERDICT (2026-09-26): NO-GO, progress real. Corpus 1191 rows (855
+train), ft_mail2 val argmax 0.877 (from 0.821), held-out G1 0.55 acc / 0.80
+coverage (base 0.25/0.50). Teacher-agreement ceiling probe on the SAME
+held-out pack: 19/20 = 0.95 (paraphrase-consistent) — the 0.85 gate is
+VALID, not a ceiling mis-specification. The remaining gap is two-part:
+~25% of pack rows hedge below the floor (under-confidence) AND acted rows
+are only ~0.69 correct vs 0.877 val argmax (pack difficulty / face shift —
+the analyst pack uses faces the generator never saw, by construction).
+Temperature sharpening is rejected as pseudo-coverage (gr12 trap; argmax is
+temp-invariant). Levers: PPO-after-warm for the acc×coverage product (ft_mail3
+running) and, if pack acc stays capped, more analyst faces + harder teacher
+contrast anchors on the confusion pairs (sales↔promo, recruiter↔needs_reply).
+Pack +4 obfuscation faces added for the G5 rail test (decode-before-screen);
+G1 denominator stays the original 20 rows.
