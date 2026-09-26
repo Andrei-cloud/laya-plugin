@@ -334,11 +334,16 @@ class Engine:
                             ("skill_route", self.skill_slate)):
             if slate and names == set(slate):
                 return task
-        # guardrail/triage/lang use fixed 3/2/10-criteria vocabularies
+        # guardrail/triage/lang use fixed 3/2/7-criteria vocabularies
         if names == {"allow", "ask_user", "block"}:
             return "guardrail"
         if names == {"reply", "act"}:
             return "triage"
+        # ft_lang was trained on exactly this 7-ISO-code slate (ft/train.jsonl
+        # lang_route); the matcher once omitted it and lang rode chain-0 at
+        # chance — silent starvation class: derive from the heads present.
+        if names == {"ar", "en", "es", "hi", "ja", "ru", "zh"}:
+            return "lang_route"
         return "base"
 
     def decide(self, task, state, options=None):

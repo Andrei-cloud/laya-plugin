@@ -118,6 +118,16 @@ class TestQuestionShapes:
                                     "criteria": {"pdf": "", "docx": ""}}, "st")
         assert out["chain"] == "ft_skill4_ppo"    # chain 4
 
+    def test_choice_lang_slate_routes_lang_head(self, engine):
+        """ft_lang trained on the 7-ISO-code slate; the matcher once knew
+        only guardrail/triage vocabularies and lang rode chain-0 at chance
+        (wire eval showed 0.184 = 1/7)."""
+        out = engine.question("l", {"type": "choice", "instructions": "pick",
+                                    "criteria": {c: "" for c in
+                                                 ["ar", "en", "es", "hi",
+                                                  "ja", "ru", "zh"]}}, "st")
+        assert out["chain"] == "ft_lang"          # chain 1
+
     def test_route_task_hint_wins_over_heuristic(self, engine):
         out = engine.question("a", {"type": "choice", "instructions": "pick",
                                     "route_task": "base",
