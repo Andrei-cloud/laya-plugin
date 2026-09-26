@@ -44,6 +44,12 @@ LANG_QUESTION = {
     }
 }
 
+# Task families this engine's question_for() can build (plus the chain-0
+# pseudo-task "base" the worker registers). route_task hints outside this
+# set fall back to the slate heuristic instead of KeyErrors in the agent.
+_SUPPORTED_TASKS = {"guardrail", "act_escalate", "triage", "lang_route",
+                    "tool_route", "skill_route", "base"}
+
 
 class Engine:
     """ONE dedicated worker thread drives the agent (invariant from
@@ -308,6 +314,13 @@ class Engine:
                   "criteria": {k: (v if isinstance(v, str) and v else f"option {k}")
                                for k, v in q["criteria"].items()}}
             task = q.get("route_task") or self._match_slate(qb["criteria"])
+            # A hint for a head this asset does not carry must not KeyError
+            # through the agent (laundered as 529 by the API layer): fall
+            # back to the slate heuristic — foreign slates ride chain-0
+            # (base) per the chain rule. Families here MUST mirror
+            # question_for() + the chain-0 pseudo-task "base".
+            if task not in _SUPPORTED_TASKS:
+                task = self._match_slate(qb["criteria"])
         else:
             raise ValueError(f"unknown question type {qtype!r}")
         return self._ask(task, state, {name: qb})

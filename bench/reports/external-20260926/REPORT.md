@@ -118,6 +118,6 @@ base wasted episodes on `aws s3 mb` mis-form).
 - Root-cause of all earlier stalled runs: macOS app firewall blocks
   container→192.168.215.1 (unrelated to the plugin); fixed via loopback
   api_base + host.docker.internal for in-container probes.
-- Raw data: `runs/external-20260926/` (guard JSONL ×3, tb_metrics.json,
+- Raw data: `bench/reports/external-20260926/` (guard JSONL ×3, tb_metrics.json,
   speed_tokens.json), rig rows in `runs/runs.jsonl`, rig summary via
   `aggregate.py`.

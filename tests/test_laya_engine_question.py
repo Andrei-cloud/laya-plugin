@@ -126,6 +126,20 @@ class TestQuestionShapes:
                                                  "block": "c"}}, "st")
         assert out["chain"] == "base"
 
+    def test_route_task_unknown_family_falls_back_not_raises(self, engine):
+        """A hint for a head this asset does not carry (e.g. mail_sort before
+        ft_mail ships) must degrade to the slate heuristic — the agent's
+        route dict KeyErrors on unknown families and the API layer launders
+        that into a misleading 529 'overloaded'."""
+        out = engine.question("lane", {"type": "choice", "instructions": "pick",
+                                       "route_task": "mail_sort",
+                                       "criteria": {"needs_reply": "a",
+                                                    "updates": "b",
+                                                    "promotional": "c",
+                                                    "sales": "d",
+                                                    "spam": "e"}}, "st")
+        assert out["chain"] == "base"          # foreign slate -> chain 0
+
     def test_unknown_type_raises(self, engine):
         with pytest.raises(ValueError):
             engine.question("a", {"type": "ranking", "instructions": "?"}, "st")
