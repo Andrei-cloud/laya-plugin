@@ -22,7 +22,7 @@ must be fine-tuned and harvested to close the rest.**
 | 4 | `compact_select` | base | ❌ | ❌ | ❌ | **no head, no gate, no bench** |
 | 5 | `skill_select` | ft_skill4_ppo | ✅ ≥0.60 | ◐ tool-route row | ❌ | head ✅, bench thin |
 | 6 | `choose_action` | base | ❌ (floor 0.65 exists, untested) | ❌ | ❌ | **no head, no gate, no bench** |
-| 7 | `triage_message` | base head (triage) | ✅ ≥0.85 | ❌ | ❌ | head ✅, no harness bench |
+| 7 | `triage_message` | base head (triage) | ✅ ≥0.85 | ◐ pack n=40 | ❌ | wire baseline 0.375; FT round 1 in flight (synth+public, wire-rubric rendered) |
 | 8 | `mail_sort` | base (regex screens + noul) | ❌ | ❌ | ❌ | **no head, no gate, no bench** |
 | 9 | `supervise_run` | base | ❌ | ❌ | ❌ | **no head, no gate, no bench** |
 | 10 | `plan_request` | none by design (builder + TEXT_MODEL) | n/a | ❌ | ❌ | rails-only, needs e2e bench |
