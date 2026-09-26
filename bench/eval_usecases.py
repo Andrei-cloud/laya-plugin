@@ -241,9 +241,99 @@ def eval_supervise(eng, limit):
     return ok, n, lat, misses, {}
 
 
+def eval_rerank(eng, limit):
+    """Held-out rerank pack through the REAL use case U.rerank_passages.
+    Gold = post-rail keep-set {rel>=.5 AND inj<.5}. 'soft' rows score
+    accepted-sets (multiple gold sets listed); exact rows need set equality."""
+    p = os.path.join(HERE, "evalpacks", "rerank.jsonl")
+    if not os.path.exists(p):
+        return 0, 0, [], [], {}
+    ok, lat, misses, n = 0, [], [], 0
+    for r in rows(p, limit):
+        ans, ms = timed(U.rerank_passages, eng, r["query"], r["passages"])
+        lat.append(ms)
+        n += 1
+        got = set(ans.get("chosen", []))
+        want = set(r["keep_ids"])
+        soft = r.get("soft_sets")
+        good = (got in [set(s) for s in soft]) if soft else (got == want)
+        if good:
+            ok += 1
+        else:
+            misses.append({"query": r["query"][:70], "gold": sorted(want),
+                           "got": sorted(got)})
+    return ok, n, lat, misses, {}
+
+
+def eval_compact(eng, limit):
+    """Held-out compact pack through U.compact_select (per-turn keep/summarize/
+    drop; drop only with conf>=.7; last keep_last=6 always keep). Golds are
+    invariants, not exact sets: keep_contains must all be in keep; no_keep /
+    no_drop forbid membership; tail turns (last 6) may never be dropped."""
+    p = os.path.join(HERE, "evalpacks", "compact.jsonl")
+    if not os.path.exists(p):
+        return 0, 0, [], [], {}
+    ok, lat, misses, n = 0, [], [], 0
+    for r in rows(p, limit):
+        ans, ms = timed(U.compact_select, eng, r["turns"])
+        lat.append(ms)
+        n += 1
+        g = r["gold"]
+        keep, summ, drop = set(ans["keep"]), set(ans["summarize"]), set(ans["drop"])
+        tail = set(range(max(0, len(r["turns"]) - 6), len(r["turns"])))
+        bad = []
+        for i in g.get("keep_contains", []):
+            if i not in keep:
+                bad.append(f"turn {i} not kept")
+        for i in g.get("no_keep", []):
+            if i in keep:
+                bad.append(f"churn turn {i} kept")
+        for i in g.get("no_drop", g.get("summarize_pool", [])):
+            if i in drop:
+                bad.append(f"turn {i} dropped (needs conf>=.7)")
+        if i_ := (tail & drop):
+            bad.append(f"tail turns dropped: {sorted(i_)}")
+        if g.get("all_first9_keep"):
+            for i in range(min(9, len(r["turns"]))):
+                if i not in keep:
+                    bad.append(f"audit-chain turn {i} not kept")
+        if bad:
+            misses.append({"id": r["id"], "why": bad[:3]})
+        else:
+            ok += 1
+    return ok, n, lat, misses, {}
+
+
+def eval_choose(eng, limit):
+    """Held-out choose pack through U.choose_action (floor 0.65, fail-safe
+    rails). Soft rows accept a listed set of valid ids; below-floor declines
+    (reobserve, acted False) count correct ONLY on rows marked decline_ok."""
+    p = os.path.join(HERE, "evalpacks", "choose.jsonl")
+    if not os.path.exists(p):
+        return 0, 0, [], [], {}
+    ok, lat, misses, n = 0, [], [], 0
+    for r in rows(p, limit):
+        ans, ms = timed(U.choose_action, eng, r["request"])
+        lat.append(ms)
+        n += 1
+        g = r["gold"]
+        got = ans.get("selected_id")
+        accept = set(g.get("accept", [g["selected_id"]]))
+        if got in accept:
+            ok += 1
+        elif got == "reobserve" and not ans.get("acted") and r.get("decline_ok"):
+            ok += 1                      # honest decline on an ambiguous row
+        else:
+            misses.append({"id": r["id"], "gold": g["selected_id"],
+                           "got": got, "conf": ans.get("confidence")})
+    return ok, n, lat, misses, {}
+
+
 EVALS = {"guardrail": eval_guardrail, "lang": eval_lang,
          "skill": eval_skill, "triage": eval_triage, "mail": eval_mail,
-         "mail_uc": eval_mail_uc, "supervise": eval_supervise}
+         "mail_uc": eval_mail_uc, "supervise": eval_supervise,
+         "rerank": eval_rerank, "compact": eval_compact,
+         "choose": eval_choose}
 
 
 def main():
