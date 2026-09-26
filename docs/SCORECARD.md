@@ -13,7 +13,7 @@ filled ONLY from committed artifacts (each row cites its source). Floor for
 | 2 | lang `lang_route` | ft_lang (1) | **0.829** (open-massive, n=2606) | — | 26/31 | not benched in rig (no lang scenario) | ✅ shipped |
 | 3 | skill `skill_select` | ft_skill4_ppo (4) | 0.416 wire (synth_skill_v2 gold+none, n=161); head offline 0.615@100% cov (GO_GATE r15) | ack-gate + stage-2 rails | 35/172 | routing task; rig tool-route scenario passes | ✅ shipped (wire gap = rails, not head — see note) |
 | 4 | triage `triage_message` | base (0) | 0.375 (authored pack, n=40) | — | 158/174 | — | ⚠️ FT candidate (now/today confusion) |
-| 5 | mail_sort `mail_sort` | ft_mail2 (5, pending G4) | 0.55 acc / 0.80 cov (analyst pack n=20; teacher ceiling 0.95) | 0.80 | pending G5 | pending | 🔁 round 3 (anchors) in flight |
+| 5 | mail_sort `mail_sort` | ft_mail4 (5, pending G4) | 0.65 acc / 0.90 cov (analyst pack n=20; teacher ceiling 0.95; trajectory .45→.55→.65) | 0.90 | pending G5 | pending | 🔁 round 5 (style-transfer corpus) in flight |
 | 6 | supervise_run | — | — | — | — | — | 🔜 FT planned (USECASE-RESEARCH) |
 | 7 | rerank_noul | — | — | — | — | — | 🔜 FT planned |
 | 8 | compact_context | — | — | — | — | — | 🔜 FT planned |
