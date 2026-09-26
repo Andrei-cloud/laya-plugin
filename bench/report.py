@@ -16,6 +16,7 @@ OUT = os.path.join(HERE, "runs", "report.html")
 ARMS = ["base", "laya", "warm", "guided"]
 ARM_LABEL = {"base": "base (no plugin)", "laya": "laya (stdio MCP)",
              "warm": "warm (HTTP daemon)", "guided": "guided (warm+policy)"}
+MODEL_LABEL = {"q38": "Q3.8 teacher", "q36": "Q3.6-35B-A3B", "q05": "Qwen2.5-0.5B"}
 
 ROWS = [
     ("wall_med_s", "Wall time / task (median s)", "lower", 1),
@@ -44,22 +45,32 @@ def _cell(s, key, dec, nd):
 def main():
     m = json.load(open(MET))
     summ = m["summary"]
-    arms = [a for a in ARMS if a in summ]
-    head = "".join(f"<th>{ARM_LABEL.get(a, a)}</th>" for a in arms)
+    # columns: every arm for q38, then "arm/model" keys as they appear
+    cols = [a for a in ARMS if a in summ] + sorted(k for k in summ if "/" in k)
+
+    def col_label(c):
+        if "/" not in c:
+            return ARM_LABEL.get(c, c) + "\u2009· " + MODEL_LABEL["q38"]
+        arm, mdl = c.split("/", 1)
+        return ARM_LABEL.get(arm, arm) + "\u2009· " + (MODEL_LABEL.get(mdl) or mdl)
+
+    head = "".join(f"<th>{col_label(a)}</th>" for a in cols)
     body = []
     for key, label, better, nd in ROWS:
-        cells = {a: summ[a].get(key) for a in arms}
+        cells = {a: summ[a].get(key) for a in cols}
         vals = [v for v in cells.values() if isinstance(v, (int, float))]
         best = None
         if better and len(set(vals)) > 1:
             best = max(vals) if better == "higher" else min(vals)
         tds = []
-        for a in arms:
+        for a in cols:
             v = cells[a]
             cls = ' class="best"' if best is not None and v == best else ""
             tds.append(f"<td{cls}>{_cell(summ[a], key, better, nd)}</td>")
         body.append(f"<tr><th>{label}</th>{''.join(tds)}</tr>")
-    per = json.dumps({a: summ.get(a) for a in arms})
+    per = json.dumps({a: summ.get(a) for a in cols})
+    import json as _j
+    labels = _j.dumps([col_label(a) for a in cols])
     html = f"""<!doctype html>
 <html><head><meta charset="utf-8"><title>Laya A/B bench</title>
 <style>
@@ -74,16 +85,17 @@ def main():
 <thead><tr><th>metric</th>{head}</tr></thead>
 <tbody>{''.join(body)}</tbody>
 </table>
-<div class="note">Same teacher model on every arm; wall includes engine load
-(stdio) vs warm daemon. Engine decision latency = Core-AI head call embedded
-in each trace. Best value per row highlighted. 12 tasks: 6 red guardrails,
-2 gray, 4 benign.</div>
+<div class="note">Wall/token rows compare arms within each model; wall includes
+engine load (stdio) vs warm daemon. Engine decision latency = Core-AI head call
+embedded in each trace. Best value per row highlighted. 12 tasks: 5 red
+guardrails, 2 gray, 5 benign.</div>
 <script>
 const D={per};
+const L={labels};
 window.hermes&&hermes.send&&document.querySelectorAll('td').forEach(td=>{{
   td.style.cursor='pointer';
-  td.onclick=()=>hermes.send('Break down the A/B bench result for arm '
-   +td.cellIndex+' ('+['base','laya','warm','guided'][td.cellIndex-1]+'): per-task table, any regressions vs base.');
+  td.onclick=()=>hermes.send('Break down the A/B bench result for column '
+   +L[td.cellIndex-1]+': per-task table, any regressions vs its base arm.');
 }});
 </script>
 </body></html>"""

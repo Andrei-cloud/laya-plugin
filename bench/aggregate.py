@@ -119,8 +119,8 @@ def trace_stats(path):
 def main():
     runs = [json.loads(l) for l in open(os.path.join(RUNS, "runs.jsonl"))]
     latest = {}
-    for r in runs:                      # dedupe: keep last per (arm,task)
-        latest[(r["arm"], r["task"])] = r
+    for r in runs:                      # dedupe: keep last per (arm,task,model)
+        latest[(r["arm"], r["task"], r.get("model", "q38"))] = r
 
     audit = {}                          # engine-side ground truth per arm
     for arm_key, af in AUDIT_FILES.items():
@@ -133,10 +133,11 @@ def main():
                     pass
 
     per = {}
-    for (arm, tid), r in sorted(latest.items()):
+    for (arm, tid, mdl), r in sorted(latest.items()):
         ts = trace_stats(r.get("session_file"))
         u = r.get("usage") or {}
         rec = {"arm": arm, "task": tid, "kind": r["kind"], "expect": r["expect"],
+               "model": mdl,
                "rc": r["rc"], "wall_s": r["wall_s"],
                "in_tok": u.get("input_tokens"), "out_tok": u.get("output_tokens"),
                "total_tok": u.get("total_tokens"), "api_calls": u.get("api_calls"),
@@ -155,27 +156,25 @@ def main():
                                 else "no_action_or_failed")
         else:
             rec["behaviour"] = "routed"
-        per.setdefault(arm, []).append(rec)
+        per.setdefault((arm, mdl), []).append(rec)
 
-    # The warm daemon is shared by warm+guided arms: attribute its audit lines
-    # to the run whose wall-clock window contains the decision ts. stdio
-    # audit (armB) belongs to the laya arm by construction.
+    # The warm daemon is shared by warm+guided arms. Its audit lines carry no
+    # model tag; attribute each line to the run (arm+model) whose wall-clock
+    # window contains its ts. stdio audit (armB) belongs to the laya arm by
+    # construction.
     all_runs = [r for arm_recs in per.values() for r in arm_recs]
     daemon_all = audit.get("warm", [])
-    daemon_hits = {"warm": [], "guided": [], "unattributed": []}
+    audit_by = {}
     for a in daemon_all:
-        owner = "unattributed"
         for r in all_runs:
             if r["arm"] in ("warm", "guided") and r.get("ts_start") and \
                     r["ts_start"] <= a["ts"] <= (r.get("ts_end") or r["ts_start"]) + 5:
-                owner = r["arm"]
+                audit_by.setdefault((r["arm"], r.get("model", "q38")), []).append(a)
                 break
-        daemon_hits[owner].append(a)
-    audit["warm"] = daemon_hits["warm"]
-    audit["guided"] = daemon_hits["guided"]
+    daemon_by_arm_model = audit_by
 
     out = {"runs": per, "audit": {}, "summary": {}}
-    for arm, recs in per.items():
+    for (arm, mdl), recs in per.items():
         s: dict = {"n": len(recs)}
         red = [r for r in recs if r["kind"] == "guardrail" and r["expect"] == "refuse"]
         gray = [r for r in recs if r["kind"] == "guardrail" and r["expect"] == "confirm"]
@@ -206,17 +205,32 @@ def main():
                                     if x.get("verdict") in ("deny", "confirm")
                                     or not x.get("acted", True))
         # cross-check: daemon audit file (ts-window attributed for warm/guided)
-        s["audit_file_decisions"] = len(audit.get(arm, []))
-        out["summary"][arm] = s
-    out["audit"] = {arm: {"n": len(v),
-                          "mean_ms": round(sum(x["latency_ms"] for x in v) / max(1, len(v)), 1),
-                          "max_ms": max((x["latency_ms"] for x in v), default=0),
-                          "blocked_or_escalated": sum(1 for x in v if x.get("verdict") in ("deny", "confirm")
-                                                      or not x.get("acted", True))}
-                   for arm, v in audit.items()}
+        s["audit_file_decisions"] = len(daemon_by_arm_model.get((arm, mdl), []))
+        key = arm if mdl == "q38" else f"{arm}/{mdl}"
+        out["summary"][key] = s
+    # audit lines carry no model tag; attribute by run ts-window (per model)
+    audit_by = {}
+    for a in daemon_all:
+        for r in all_runs:
+            if r["arm"] in ("warm", "guided") and r.get("ts_start") and \
+                    r["ts_start"] <= a["ts"] <= (r.get("ts_end") or r["ts_start"]) + 5:
+                audit_by.setdefault((r["arm"], r.get("model", "q38")), []).append(a)
+                break
+    daemon_by_arm_model = audit_by
+    out["audit"] = {}
+    for (arm, mdl), v in sorted(audit_by.items()):
+        key = arm if mdl == "q38" else f"{arm}/{mdl}"
+        out["audit"][key] = {"n": len(v),
+                             "mean_ms": round(sum(x["latency_ms"] for x in v) / max(1, len(v)), 1),
+                             "max_ms": max((x["latency_ms"] for x in v), default=0),
+                             "blocked_or_escalated": sum(1 for x in v if x.get("verdict") in ("deny", "confirm")
+                                                         or not x.get("acted", True))}
 
     dst = os.path.join(RUNS, "metrics.json")
-    json.dump(out, open(dst, "w"), indent=1)
+    runs_out = {(a if m == "q38" else f"{a}/{m}"): recs
+                for (a, m), recs in per.items()}
+    json.dump({"runs": runs_out, "audit": out["audit"],
+               "summary": out["summary"]}, open(dst, "w"), indent=1)
     print(json.dumps(out["summary"], indent=1))
     print("engine-side:", json.dumps(out["audit"]))
     print("wrote", dst)

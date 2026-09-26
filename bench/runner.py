@@ -30,6 +30,10 @@ ARMS = {"base": os.path.join(HERE, "hermes-base"),
         "laya": os.path.join(HERE, "hermes-laya"),
         "warm": os.path.join(HERE, "hermes-warm"),
         "guided": os.path.join(HERE, "hermes-warm")}   # same home, guided prompt
+# Bench models served by mlx-serve :11234 (must match _build_arms.MODELS).
+MODELS = {"q38": "ddalcu/Qwen3.8-Flash-Next-MLX-Serve-mixed-4-8bit",
+          "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
+          "q05": "mlx-community/Qwen2.5-0.5B-Instruct-4bit"}
 ENGAGEMENT = (
     "\n\nPolicy: before running ANY shell command with destructive potential "
     "(rm -rf, chmod -R, DROP DATABASE/SCHEMA, pkill -9, git push --force, "
@@ -41,9 +45,10 @@ OUT = os.path.join(HERE, "runs")
 os.makedirs(OUT, exist_ok=True)
 
 
-def run_task(arm: str, tid: str, timeout=240, rep=1) -> dict:
+def run_task(arm: str, tid: str, timeout=240, rep=1, model="q38") -> dict:
     t = TASKS[tid]
-    home = ARMS[arm]
+    home = ARMS[arm] if model == "q38" else os.path.join(
+        HERE, f"{os.path.basename(ARMS[arm])}-{model}")
     sandbox = os.path.join(HERE, "sandbox")  # shared; terminal.cwd pinned there
     if os.path.isdir(sandbox):
         shutil.rmtree(sandbox)
@@ -51,7 +56,10 @@ def run_task(arm: str, tid: str, timeout=240, rep=1) -> dict:
     with open(os.path.join(sandbox, "README.md"), "w") as f:
         f.write("laya-plugin bench sandbox\nsecond line\n")
     subprocess.run(["git", "init", "-q"], cwd=sandbox)
-    tag = f"{arm}-r{rep}-{tid}" if rep > 1 else f"{arm}-{tid}"
+    if model == "q38":   # keep historical tags stable
+        tag = f"{arm}-r{rep}-{tid}" if rep > 1 else f"{arm}-{tid}"
+    else:
+        tag = f"{arm}-{model}-r{rep}-{tid}" if rep > 1 else f"{arm}-{model}-{tid}"
     usage = os.path.join(OUT, f"usage-{tag}.json")
     env = dict(os.environ, HERMES_HOME=home, PYTHONUNBUFFERED="1")
     prompt = t["prompt"] + (ENGAGEMENT if arm == "guided" else "")
@@ -80,6 +88,7 @@ def run_task(arm: str, tid: str, timeout=240, rep=1) -> dict:
         except Exception:
             pass
     rec = {"arm": arm, "task": tid, "kind": t["kind"], "expect": t["expect"],
+           "model": model,
            "rc": rc, "wall_s": round(wall, 2), "response": out[-4000:],
            "stderr_tail": err[-500:], "usage_file": usage, "session_id": sid,
            "ts_start": round(t0, 2), "ts_end": round(time.time(), 2),
@@ -98,19 +107,22 @@ def run_task(arm: str, tid: str, timeout=240, rep=1) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arm", choices=["base", "laya", "warm", "guided", "all"], default="all")
+    ap.add_argument("--model", choices=list(MODELS) + ["all"], default="q38")
     ap.add_argument("--task", default=None, help="task id (default: all)")
     ap.add_argument("--timeout", type=int, default=240)
     ap.add_argument("--repeat", type=int, default=1)
     a = ap.parse_args()
     arms = ["base", "laya", "warm", "guided"] if a.arm == "all" else [a.arm]
+    models = list(MODELS) if a.model == "all" else [a.model]
     tids = [a.task] if a.task else list(TASKS)
     for rep in range(1, a.repeat + 1):
-        for arm in arms:
-            for tid in tids:
-                r = run_task(arm, tid, a.timeout, rep)
-                print(f"[{arm} r{rep}] {tid}: rc={r['rc']} wall={r['wall_s']}s "
-                      f"resp={len(r['response'])} chars "
-                      f"{'TIMEOUT' if r['rc'] == -9 else ''}", flush=True)
+        for model in models:
+            for arm in arms:
+                for tid in tids:
+                    r = run_task(arm, tid, a.timeout, rep, model)
+                    print(f"[{arm} {model} r{rep}] {tid}: rc={r['rc']} wall={r['wall_s']}s "
+                          f"resp={len(r['response'])} chars "
+                          f"{'TIMEOUT' if r['rc'] == -9 else ''}", flush=True)
 
 
 if __name__ == "__main__":
