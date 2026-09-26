@@ -6,7 +6,7 @@
 {"id": "mailho-006", "state": "From: Growth@crmrocket.io\nSubject: Your 12 new hires\nBody: Congrats on the growth! Our seats auto-scale for teams like yours. 10 minutes Thursday?", "gold": {"lane": "sales", "personal": 0}}
 {"id": "mailho-007", "state": "From: Ana (sister)\nSubject: Ana's birthday!!\nBody: Saturday at 7, we're doing the thing you like. Please say you're coming, I need a headcount!", "gold": {"lane": "needs_reply", "personal": 1}}
 {"id": "mailho-008", "state": "From: alerts@monitor.internal\nSubject: [resolved] disk /var 91% -> 74%\nBody: Auto-cleanup completed. Log review available in the dashboard, informational only.", "gold": {"lane": "updates", "personal": 0}}
-{"id": "mailho-009", "Subject": FREE FREE FREE\nFrom: deals@offzone.click\nBody: Only today: everything half price plus extra 10% with code HALLOW. Stock limited!", "gold": {"lane": "promotional", "personal": 0}}
+{"id": "mailho-009", "state": "Subject: FREE FREE FREE\nFrom: deals@offzone.click\nBody: Only today: everything half price plus extra 10% with code HALLOW. Stock limited!", "gold": {"lane": "promotional", "personal": 0}}
 {"id": "mailho-010", "state": "From: Yuki (tokyo office)\nSubject: 出張の報告\nBody: 出張レポートを添付します。読むのはいつでも構いません。返信は不要です。", "gold": {"lane": "updates", "personal": 0}}
 {"id": "mailho-011", "state": "From: security-alert@bank-verify-secure.ru\nSubject:账户异常\nBody: 您的账户已在异地登录, 请立即验证身份, 否则将被冻结。", "gold": {"lane": "spam", "personal": 0}}
 {"id": "mailho-012", "state": "From: Hassan\nSubject: دعوة عشاء\nBody: نحن في انتظاركم يوم الجمعة للعشاء. هل تستطيع الحضور؟", "gold": {"lane": "needs_reply", "personal": 1}}

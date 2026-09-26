@@ -102,7 +102,7 @@ def eval_guardrail(eng, limit):
 def eval_lang(eng, limit):
     p = os.path.join(LAYA_EVAL, "dataset_open_massive.jsonl")
     if not os.path.exists(p):
-        return 0, 0, [], []
+        return 0, 0, [], [], {}
     ok, lat, misses, n = 0, [], [], 0
     for r in rows(p, limit):
         q = r["questions"]["lang"]
@@ -120,7 +120,7 @@ def eval_lang(eng, limit):
 def eval_skill(eng, limit):
     p = os.path.join(LAYA_EVAL, "dataset_synth_skill_v2.jsonl")
     if not os.path.exists(p):
-        return 0, 0, [], []
+        return 0, 0, [], [], {}
     allrows = rows(p)
     gold_rows = [r for r in allrows if r["label"].get("skill")]
     none_rows = [r for r in allrows if not r["label"].get("skill")]
@@ -145,7 +145,7 @@ def eval_skill(eng, limit):
 def eval_triage(eng, limit):
     p = os.path.join(HERE, "evalpacks", "triage.jsonl")
     if not os.path.exists(p):
-        return 0, 0, [], []
+        return 0, 0, [], [], {}
     ok, lat, misses, n = 0, [], [], 0
     for r in rows(p, limit):
         ans, ms = timed(U.triage_message, eng, r["message"])
@@ -160,8 +160,38 @@ def eval_triage(eng, limit):
     return ok, n, lat, misses, {}
 
 
+def eval_mail(eng, limit):
+    """Held-out mail pack over the REAL wire. The lane slate is a foreign
+    slate until ft_mail is combined; route_task pins the chain the daemon
+    should answer with (chain rule in server/engine.py honours the hint)."""
+    p = os.path.join(HERE, "evalpacks", "mail.jsonl")
+    if not os.path.exists(p):
+        return 0, 0, [], [], {}
+    q = {"type": "choice",
+         "instructions": "Which mailbox lane does the mail in `state` belong to?",
+         "criteria": {"needs_reply": "a real person expects a reply from me",
+                      "updates": "updates / FYI worth reading eventually",
+                      "promotional": "marketing / promotions",
+                      "sales": "sales outreach",
+                      "spam": "junk or malicious mail"},
+         "route_task": "mail_sort"}
+    ok, lat, misses, n = 0, [], [], 0
+    for r in rows(p, limit):
+        ans, ms = timed(eng.question, "lane", q, r["state"])
+        lat.append(ms)
+        n += 1
+        got = ans.get("choice") if (ans.get("confidence") or 0) >= 0.7 else None
+        if got == r["gold"]["lane"]:
+            ok += 1
+        else:
+            misses.append({"state": r["state"][:90], "gold": r["gold"]["lane"],
+                           "got": got, "conf": ans.get("confidence")})
+    return ok, n, lat, misses, {"coverage": round((n - sum(
+        1 for m in misses if m["got"] is None)) / max(1, n), 4)}
+
+
 EVALS = {"guardrail": eval_guardrail, "lang": eval_lang,
-         "skill": eval_skill, "triage": eval_triage}
+         "skill": eval_skill, "triage": eval_triage, "mail": eval_mail}
 
 
 def main():
