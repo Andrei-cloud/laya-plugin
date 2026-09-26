@@ -1,0 +1,40 @@
+{"message": "Fixer says the boiler will die by 5pm unless someone calls them today. — Maria", "gold": "now"}
+{"message": "Board deck review due at 09:00 tomorrow, final version attached.", "gold": "now"}
+{"message": "URGENT: my account was just locked and I have a demo in 20 minutes, can you reset the password?", "gold": "now"}
+{"message": "The signing key rotation must happen before the 18:00 maintenance window or the deploy fails.", "gold": "now"}
+{"message": "Please approve the refund before end of day, the customer is threatening a chargeback.", "gold": "now"}
+{"message": "Fire alarm maintenance is scheduled for 14:00 and needs someone on site to let them in.", "gold": "now"}
+{"message": "My upload failed with error 502 three times in a row and the deadline is tonight. Screenshot attached.", "gold": "now"}
+{"message": "Invoice #4417 is overdue by 30 days — legal says we must respond before Friday.", "gold": "today"}
+{"message": "The staging database migration script errors on the users table; I'm blocked until someone reviews my PR #212.", "gold": "today"}
+{"message": "Can you review my paper draft? No rush, before the end of the month would be perfect.", "gold": "queue"}
+{"message": "Reminder to reorder printer paper when you're near the store.", "gold": "queue"}
+{"message": "Here are the meeting notes from Tuesday for your records, nothing needed from you.", "gold": "ignore"}
+{"message": "Increase your SEO rankings 300% with one weird trick — limited offer!", "gold": "ignore"}
+{"message": "Our cloud backup suite has openings this month — book a 15-min call to learn more.", "gold": "ignore"}
+{"message": "GitHub notification: someone starred your repository octocat/Hello-World.", "gold": "ignore"}
+{"message": "Daily digest: 12 new articles match your saved searches.", "gold": "ignore"}
+{"message": "Cyber Monday: all annual plans 40% off until midnight.", "gold": "ignore"}
+{"message": "Customer reports the export button does nothing on Safari since yesterday's update. Repro steps included.", "gold": "today"}
+{"message": "Question: does the plugin support Windows, or only macOS/Linux?", "gold": "queue"}
+{"message": "Quick question — what's the Wi-Fi guest password for the office?", "gold": "queue"}
+{"message": "The nightly ETL finished 3 hours late again; logs are in /var/log/etl. Worth a look when you have time.", "gold": "queue"}
+{"message": "Your monthly statement is ready. No action required.", "gold": "ignore"}
+{"message": "Newsletter: this week in machine learning — 8 stories.", "gold": "ignore"}
+{"message": "Sales: I noticed your team grew 40% — our enterprise tier might fit. 10 minutes next week?", "gold": "ignore"}
+{"message": "This is a reminder that your parking permit review is due next week (no reply needed).", "gold": "today"}
+{"message": "The client's lawyer called twice; they need written confirmation by tomorrow 10am or they file a complaint.", "gold": "now"}
+{"message": "Heads-up: the coffee machine is broken. IT has been told.", "gold": "ignore"}
+{"message": "Production checkout error rate spiked to 4% in the last 15 minutes — on-call, please look now.", "gold": "now"}
+{"message": "Please pay the electricity bill before the 5th to avoid a late fee.", "gold": "today"}
+{"message": "Draft PR text below for the changelog; merge whenever, no rush.", "gold": "queue"}
+{"message": "Free webinar tomorrow: 'Scaling teams with AI' — reserve your seat.", "gold": "ignore"}
+{"message": "The customer whose data was leaked is asking for confirmation by 3pm today or their attorney contacts the regulator.", "gold": "now"}
+{"message": "TODO from last retro: update the runbook for the payments service.", "gold": "queue"}
+{"message": "Automated alert: disk usage on backup-nas is 88% and rising; nobody has acknowledged it.", "gold": "today"}
+{"message": "Special offer for valued customers: extend your subscription at last year's price.", "gold": "ignore"}
+{"message": "Can you translate this paragraph to Portuguese for the São Paulo team? Anytime this week works.", "gold": "queue"}
+{"message": "Spam report: you won a lottery you never entered — claim your prize now.", "gold": "ignore"}
+{"message": "The intern's access badge still opens the server room even though they left last month — needs fixing, not this second.", "gold": "queue"}
+{"message": "Water leak reported under the kitchen sink — plumber can come until 6pm today.", "gold": "now"}
+{"message": "FYI: the office will be closed for renovations next Wednesday. No action needed.", "gold": "ignore"}

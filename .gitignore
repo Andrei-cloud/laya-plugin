@@ -18,6 +18,10 @@ bench/*
 !bench/*.py
 !bench/README.md
 !bench/tasks.json
+# authored eval packs are fixtures (gold-labeled, train-excluded by design),
+# like tasks.json — tracked; runs/ stays untracked
+!bench/evalpacks/
+!bench/evalpacks/*.jsonl
 # one-off sweep-resume helper (session-scoped, not part of the rig)
 bench/_continue_sweep.py
 
