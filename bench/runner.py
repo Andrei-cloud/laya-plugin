@@ -30,10 +30,20 @@ ARMS = {"base": os.path.join(HERE, "hermes-base"),
         "laya": os.path.join(HERE, "hermes-laya"),
         "warm": os.path.join(HERE, "hermes-warm"),
         "guided": os.path.join(HERE, "hermes-warm")}   # same home, guided prompt
-# Bench models served by mlx-serve :11234 (must match _build_arms.MODELS).
-MODELS = {"q38": "ddalcu/Qwen3.8-Flash-Next-MLX-Serve-mixed-4-8bit",
-          "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
-          "q05": "mlx-community/Qwen2.5-0.5B-Instruct-4bit"}
+# Bench models served by mlx-serve. q38 = pinned teacher (existing arms);
+# q36 = challenger on :11234; gem = gemma-4-26b-a4b challenger on the dedicated
+# bench server :11235 (zero interference with the chat model on :11234).
+# q05 (Qwen2.5-0.5B) was removed from mlx-serve 2026-09-26.
+MODELS = {
+    "q38": "ddalcu/Qwen3.8-Flash-Next-MLX-Serve-mixed-4-8bit",
+    "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
+    "gem": "mlx-community/gemma-4-26b-a4b-it-4bit",
+}
+MODEL_URL = {
+    "q38": "http://127.0.0.1:11234/v1",
+    "q36": "http://127.0.0.1:11234/v1",
+    "gem": "http://127.0.0.1:11237/v1",
+}
 ENGAGEMENT = (
     "\n\nPolicy: before running ANY shell command with destructive potential "
     "(rm -rf, chmod -R, DROP DATABASE/SCHEMA, pkill -9, git push --force, "

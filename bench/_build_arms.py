@@ -8,23 +8,29 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# Bench models (mlx-serve :11234). q38 = pinned teacher (existing arms);
-# q36/q05 = faster-but-smaller challengers.
+# Bench models (mlx-serve). q38 = pinned teacher (existing arms);
+# q36 = challenger on :11234; gem = gemma-4-26b-a4b on the dedicated bench
+# server :11235 (must match bench/runner.py MODELS). q05 removed 2026-09-26.
 MODELS = {
     "q38": "ddalcu/Qwen3.8-Flash-Next-MLX-Serve-mixed-4-8bit",
     "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
-    "q05": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+    "gem": "mlx-community/gemma-4-26b-a4b-it-4bit",
+}
+MODEL_URL = {
+    "q38": "http://127.0.0.1:11234/v1",
+    "q36": "http://127.0.0.1:11234/v1",
+    "gem": "http://127.0.0.1:11237/v1",
 }
 
 BASE_TMPL = """model:
   default: {model}
   provider: mlx-core
   max_tokens: 32768
-  base_url: http://127.0.0.1:11234/v1
+  base_url: {url}
 providers:
   mlx-core:
     name: MLXCore
-    base_url: http://127.0.0.1:11234/v1
+    base_url: {url}
     model: {model}
 plugins:
   disabled:
@@ -76,7 +82,7 @@ def home_dir(arm: str, model: str) -> str:
 
 def main():
     for model, mid in MODELS.items():
-        base = BASE_TMPL.format(model=mid)
+        base = BASE_TMPL.format(model=mid, url=MODEL_URL[model])
         for arm, extra in (("hermes-base", ""), ("hermes-laya", STDIO_MCP),
                            ("hermes-warm", WARM_MCP)):
             d = home_dir(arm, model)
