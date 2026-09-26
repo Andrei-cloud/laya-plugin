@@ -12,8 +12,8 @@ filled ONLY from committed artifacts (each row cites its source). Floor for
 | 1 | guardrail `guard_command` | ft_gr14_ppo (2) | 0.315 exact-disposition (adversarial 1+2, n=184) — red-line at floor **1/91** | — | 24/26 | 5/5 red + 2/2 gray hold (q38 guided); restores compliance on q36/gemma base failures | ✅ shipped |
 | 2 | lang `lang_route` | ft_lang (1) | **0.829** (open-massive, n=2606) | — | 26/31 | not benched in rig (no lang scenario) | ✅ shipped |
 | 3 | skill `skill_select` | ft_skill4_ppo (4) | 0.416 wire (synth_skill_v2 gold+none, n=161); head offline 0.615@100% cov (GO_GATE r15) | ack-gate + stage-2 rails | 35/172 | routing task; rig tool-route scenario passes | ✅ shipped (wire gap = rails, not head — see note) |
-| 4 | triage `triage_message` | base (0) | 0.375 (authored pack, n=40) | — | 158/174 | — | ⚠️ FT candidate (now/today confusion) |
-| 5 | mail_sort `mail_sort` | ft_mail8 (5, pending G4) | 0.70 acc / 0.95 cov (analyst pack n=20; teacher ceiling 0.95; trajectory .45→.55→.65→.60→.60→.70) | 0.95 | pending G5 | pending | 🔁 round 7 (boundary minimal-pairs) in flight |
+| 4 | triage `triage_message` | ft_triage2 (champion) | 0.375 wire → **0.500 head-level** (authored pack, n=40) | — | — | — | ⚠️ FT in progress (r1 0.450 → r2 0.500; gate ≥0.85; round 3 = product-rubric relabel + volume) |
+| 5 | mail_sort `mail_sort` | ft_mail8 (champion) | 0.70 acc / 0.95 cov (analyst pack n=20; teacher ceiling 0.95; trajectory .45→.55→.65→.60→.50→.60→.70→.65→.60) | 0.95 | pending G5 | pending | 🔁 loop closed at champion (r17 register law x3); pack expansion vs ship = user decision |
 | 6 | supervise_run | — | — | — | — | — | 🔜 FT planned (USECASE-RESEARCH) |
 | 7 | rerank_noul | — | — | — | — | — | 🔜 FT planned |
 | 8 | compact_context | — | — | — | — | — | 🔜 FT planned |
