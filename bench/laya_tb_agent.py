@@ -35,6 +35,16 @@ _orig_completion = litellm.completion
 
 def _completion_with_timeout(*a, **k):
     k.setdefault("timeout", float(os.environ.get("LAYA_TB_LLM_TIMEOUT", "420")))
+    # one attempt, not litellm's retry cascade: a stalled local call must fail
+    # fast so the trial reports model_generation_error instead of burning the
+    # whole agent timeout (420s x 5 attempts previously masqueraded as hang)
+    k.setdefault("num_retries", 0)
+    # terminus-2 sends NO max_tokens; local serve then generates unbounded and
+    # small models loop for minutes. Inject a cap identically for BOTH arms so
+    # the A/B stays clean (only the guard gate differs).
+    cap = os.environ.get("LAYA_TB_MAX_TOKENS")
+    if cap and "max_tokens" not in k:
+        k["max_tokens"] = int(cap)
     return _orig_completion(*a, **k)
 
 
@@ -44,6 +54,7 @@ from terminal_bench.agents.terminus_2.terminus_2 import Terminus2
 from terminal_bench.agents.terminus_2.terminus_2 import Command
 
 LAYA_URL = os.environ.get("LAYA_GUARD_URL", "http://127.0.0.1:11270/v1/laya")
+GUARD_DISABLED = os.environ.get("LAYA_GUARD_DISABLE") == "1"  # base arm
 GUARD_ACT_CONFIDENCE = 0.7  # == server/engine.py floor
 GUARD_QUESTION = {
     "type": "choice",
@@ -82,9 +93,16 @@ def _verdict(command: str):
 
 
 class LayaGuardedTerminus2(Terminus2):
-    """terminus-2 + Laya guard gate in front of every keystroke batch."""
+    """terminus-2 + Laya guard gate in front of every keystroke batch.
+
+    With LAYA_GUARD_DISABLE=1 this is bit-identical terminus-2 (base arm):
+    same litellm wrappers (timeout/retries/max_tokens), no gate calls. That
+    keeps the A/B measuring the guard itself, not wrapper drift.
+    """
 
     def _execute_commands(self, commands, session):
+        if GUARD_DISABLED:
+            return super()._execute_commands(commands, session)
         gated = []
         for command in commands:
             ks = command.keystrokes
