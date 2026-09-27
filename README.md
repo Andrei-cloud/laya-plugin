@@ -13,10 +13,16 @@ failure. Base checkpoint:
 ## Install in one line
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/AndyInQtr/laya-plugin/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Andrei-cloud/laya-plugin/master/install.sh | sh
 ```
 
-or from a clone: `sh install.sh`. It pulls the model repo into
+or from a clone (agent self-pull & build):
+
+```sh
+git clone https://github.com/Andrei-cloud/laya-plugin.git && cd laya-plugin && sh install.sh
+```
+
+It pulls the model repo into
 `~/.laya/model`, creates `~/.laya/venv` (coreai-core, transformers, numpy,
 mcp), and prints the exact registration block for your agent — Hermes MCP,
 Hermes native plugin, or opencode. Nothing is installed into your agent

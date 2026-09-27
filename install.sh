@@ -1,7 +1,7 @@
 #!/bin/sh
 # Laya decision plugin — one-click install (macOS 26.5+, Apple Silicon).
 #
-#   curl -fsSL https://raw.githubusercontent.com/<you>/laya-plugin/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/Andrei-cloud/laya-plugin/master/install.sh | sh
 #   # or from a clone:  sh install.sh
 #
 # What it does:
