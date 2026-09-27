@@ -14,11 +14,11 @@ filled ONLY from committed artifacts (each row cites its source). Floor for
 | 3 | skill `skill_select` | ft_skill4_ppo (4) | 0.416 wire (synth_skill_v2 gold+none, n=161); head offline 0.615@100% cov (GO_GATE r15) | ack-gate + stage-2 rails | 35/172 | routing task; rig tool-route scenario passes | ✅ shipped (wire gap = rails, not head — see note) |
 | 4 | triage `triage_message` | ft_triage5 (champion) | 0.375 wire → **0.625 head-level** (authored pack, n=40) | — | — | — | 🔁 loop closed at 0.625 (r3 relabel +0.075; r6 PPO-on-route +0.05; r7 trust-region tie — residual gap = oracle noise, teacher's own pack 0.700 caps end-to-end; gate ≥0.85 unwinnable vs oracle, documented) |
 | 5 | mail_sort `mail_sort` | ft_mail8 (champion) | 0.70 acc / 0.95 cov (analyst pack n=20; teacher ceiling 0.95; trajectory .45→.55→.65→.60→.50→.60→.70→.65→.60) | 0.95 | pending G5 | pending | 🔁 loop closed at champion (r17 register law x3); pack expansion vs ship = user decision |
-| 6 | supervise_run | base (no ft head) | **0.607** (analyst pack n=28, post-rail action+alert; p50 74ms) | — | — | — | 🔜 baseline measured 2026-09-26; FT candidate (facts→action = triage-family recipe) |
-| 7 | rerank_noul | base noul (no ft head) | **0.000** (pack n=10; rel-noul never clears .5 rail → empty keep-sets; near-dupe over-fire once) | — | — | — | 🔜 baseline measured — calibration wall, FT candidate (noul yes/no recipe) |
-| 8 | compact_context | base (no ft head) | **0.000** (pack n=10; keep/drop conf under .7 floor on most gold-keep turns) | — | — | — | 🔜 baseline measured — calibration wall, FT candidate (per-turn keep/drop) |
-| 9 | choose_action | base (no ft head) | **0.550** (GUI-step pack n=20; p50 15ms) | — | — | — | 🔜 baseline measured; FT candidate (action-slate bandit, tool_route PPO recipe) |
-| 10 | ladder_plan | — | — | — | — | — | 🔜 FT planned |
+| 6 | supervise_run | ft_sup3 (chain 7 after deploy) | 0.607 wire base → **0.643 head-level** (analyst pack n=28; r27 register+rubric SFT; ppo_sup round r33 in flight) | — | 74 (base arm) | — | 🔁 FT above base; wire re-measure pending chain-expansion deploy (r31-e) |
+| 7 | rerank_noul | base noul (ft_rrk r1 in flight) | **0.000** (pack n=10; rel-noul never clears .5 rail → empty keep-sets) | — | — | — | 🔁 corpus 285 rows harvested; teacher ceiling 8/10 (r28 probe); SFT r1 queued (r33) |
+| 8 | compact_context | base (ft_cmp r1 in flight) | **0.000** (pack n=10; keep/drop conf under .7 floor) | — | — | — | 🔁 corpus 152 rows; pack golds repaired r30 (2 rows were unsatisfiable by ANY policy); teacher re-probe queued |
+| 9 | choose_action | ppo_cho (chain 8 after deploy) | 0.550 wire base → **0.650 head-level** (GUI-step pack n=20; r32 PPO-on-acted +0.10, zero regressions; extension r34 in flight) | — | 15 (base arm) | — | 🔁 FT above base; wire re-measure pending deploy (r31-e) |
+| 10 | ladder_plan | **none by design** | n/a — zero model calls (code-verified r31: cooldown arithmetic only; spec §7 "No head — config + templates") | n/a | 0 | 11 pytest tests (usecases+cli+naming) | ✅ by-design (row corrected — "FT planned" was wrong) |
 | 11 | plan_request | none by design | n/a (rails + TEXT_MODEL) | n/a | n/a | n/a | rails-only; e2e bench planned |
 | 12 | ack_gate (local) | none by design | local rule, no engine call | n/a | 0 | free tier proven (r15) | ✅ by-design |
 
@@ -39,7 +39,8 @@ costs task completion (75%→17–33%) → T1 (terse-shell corpus retrain) + T3.
 ## Model-level cost (engine)
 
 - Wire latency: p50 16–158 ms by head (zero-load baseline, usecase_eval.json).
-- Combined asset: one Core AI .aimodel, 5 chains, one encoder (f16).
+- Combined asset: one Core AI .aimodel, one encoder (f16); 5 chains live,
+  8 after the r31-e chain-expansion deploy (adds ft_triage5/ft_mail8/ft_sup3).
 - Rig overhead: gate wall cost 7.5–10.6 s per 12-task block (21–37 ms/call),
   zero fail-open events across 72 external trials.
 
