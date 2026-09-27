@@ -63,8 +63,16 @@ class CombinedAgent:
         self.temps = []
         for h in self.chain_order:
             hp = os.path.join(os.path.dirname(source_dir), h, "rl_agent_config.json")
-            t = {"temperature": [1.0] * 3, "temperature_by_options": {}}
-            if h != "base" and os.path.exists(hp):
+            if h == "base" or not os.path.exists(hp):
+                # release-folder layout fallback: configs/<head>.rl_agent_config.json
+                # (LAYA_SOURCE=release/configs). Without this, a consumer that
+                # points at the published folder silently runs EVERY chain at
+                # T=1.0 — flattened SFT heads, wrong rails (r36 audit).
+                alt = os.path.join(source_dir, f"{h}.rl_agent_config.json")
+                t = {"temperature": [1.0] * 3, "temperature_by_options": {}}
+                if h != "base" and os.path.exists(alt):
+                    t = json.load(open(alt))
+            else:
                 t = json.load(open(hp))
             self.temps.append({
                 "temperature": [clamp_temperature(x) for x in t.get("temperature", [1.0] * 3)],
