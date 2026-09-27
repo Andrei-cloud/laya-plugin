@@ -36,6 +36,21 @@ TASK_ROUTE = {"triage": 5, "lang_route": 1, "guardrail": 2, "act_escalate": 2,
               "mail_sort": 6, "supervise": 7,
               "choose": 8, "compact": 9, "rerank": 10}
 
+# r36: the qtype embedding fed to the asset IS a trained input, and the two
+# binary dialects are NOT interchangeable — native noul renders options
+# "false: no, the statement does not hold"/"true: yes, the statement holds"
+# under qtype=noul; choice {no,yes} renders "no: no"/"yes: yes" under
+# qtype=choice. Measured on tri-012 (ft_triage5): P(deadline) = 0.022 native
+# vs 0.842 rewritten — the rewrite flips binary poles for families trained
+# native-noul. Families whose binary questions were trained as choice
+# {no,yes} (supervise, rerank — corpus criteria literally {"no":"no",
+# "yes":"yes"}) must keep the choice rendering. The wire engine picks the
+# dialect per route_task from THIS table (provenance key
+# "binary_noul_dialect" overrides for future builds).
+BINARY_NOUL_TASKS = frozenset({"triage", "mail_sort", "guardrail",
+                               "act_escalate", "skill_route", "lang_route",
+                               "base"})
+
 
 class CombinedDecisionModel(nn.Module):
     """One encoder, len(HEADS) head-chains. forward(ids, att, mpos, mmask, qtype, head_idx)."""

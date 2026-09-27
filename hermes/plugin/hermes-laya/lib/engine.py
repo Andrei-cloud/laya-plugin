@@ -50,6 +50,16 @@ LANG_QUESTION = {
 _SUPPORTED_TASKS = {"guardrail", "act_escalate", "triage", "lang_route",
                     "tool_route", "skill_route", "base"}
 
+# Families whose BINARY questions were TRAINED as choice {no,yes} (their
+# corpus criteria are literally {"no":"no","yes":"yes"}): the wire must keep
+# that rendering. Everything else — triage/mail/guardrail/skill and the
+# chain-0 base — trained binaries as NATIVE noul (options "false: …"/
+# "true: …"). The qtype embedding is a trained input; rendering one dialect
+# in the other's shape flips poles (r36: tri-012 P(deadline) 0.022 native vs
+# 0.842 rewritten). Corpus-derived source of truth: laya_port/combined.py
+# BINARY_NOUL_TASKS (kept in sync by tests/test_laya_engine_question.py).
+_CHOICE_BINARY_TASKS = frozenset({"supervise", "rerank"})
+
 # Route keys the LOADED asset reports (set per-instance from the warmup
 # probe). Class-level default keeps the pre-probe semantics for any object
 # built without _build (unit fixtures): hints are then clamped exactly as
@@ -322,8 +332,24 @@ class Engine:
         # anything else keeps the old clamp semantics.
         supported = hint in self._routes if hint else False
         if qtype == "noul":
-            qb = {"type": "choice", "instructions": q["instructions"],
-                  "criteria": {"no": "no", "yes": "yes"}}
+            # r36 DIALECT FIX: binary questions were trained in TWO
+            # dialects — native noul (options "false: …"/"true: …") for
+            # triage/mail/guardrail/skill/base, and choice {no,yes} for
+            # supervise/rerank. The qtype embedding is a trained input:
+            # rendering a native-noul family as choice {no,yes} flips its
+            # poles (tri-012: P(deadline) 0.022 -> 0.842). Pick the
+            # dialect from the family hint; foreign/no hint rides base =
+            # native dialect (chain-0 was pretrained native-noul).
+            if hint in _CHOICE_BINARY_TASKS and (hint in self._routes or not self._routes):
+                qb = {"type": "choice", "instructions": q["instructions"],
+                      "criteria": {"no": "no", "yes": "yes"}}
+            else:
+                # native dialect: criteria LEFT ABSENT — combined_agent
+                # renders the training-time option strings ("false: no, the
+                # statement does not hold"/"true: yes, the statement
+                # holds"); passing explicit {"false":…,"true":…} texts would
+                # render a THIRD, never-trained string.
+                qb = {"type": "noul", "instructions": q["instructions"]}
             # noul used to pin task="base" unconditionally — that kept
             # ft_sup3's noul head unreachable on the wire even after its
             # chain shipped. With a carried hint the noul question rides

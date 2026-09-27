@@ -137,7 +137,7 @@ class CombinedAgent:
                                              tp["temperature"][qt])
         logits = logits / max(t, 1e-6)
         p = np.exp(logits - logits.max()); p /= p.sum()
-        names = list(qb["crit"]) if qb["t"] == "choice" else ["yes", "no"]
+        names = list(qb["crit"]) if qb["t"] == "choice" else ["no", "yes"]
         best = int(p.argmax())
         conf = float(confidence_from_probs(p, len(p)))
         act_p = float(np.exp(act - act.max())[1] / np.exp(act - act.max()).sum())

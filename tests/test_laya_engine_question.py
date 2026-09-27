@@ -28,7 +28,9 @@ class FakeAgent:
     def decide(self, task, state, question, pad_to=None):
         (name, q), = question.items()
         self.last = {"task": task, "state": state, "q": q, "pad_to": pad_to}
-        names = list(q["criteria"])
+        # r36: native-noul qb carries NO criteria (the real agent renders
+        # the training-time false/true option strings); keys stay no/yes.
+        names = list(q.get("criteria") or ["no", "yes"])
         probs = {n: 1.0 / len(names) for n in names}
         return {"task": task, "chain": self.chain_order[self.route[task]],
                 "choice": names[0], "confidence": probs[names[0]],
