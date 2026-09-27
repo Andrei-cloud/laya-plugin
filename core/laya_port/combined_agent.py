@@ -46,6 +46,17 @@ class CombinedAgent:
         self.B = self.prov["shape"]["B"]
         self.chain_order = list(self.prov["heads"])          # HEADS_ORDER
         self.route = dict(DEFAULT_ROUTE)
+        # Provenance-carried routing overrides the static table: the builder
+        # writes heads[<chain>].tasks (which TASK_ROUTE entries land on that
+        # chain), so a rebuilt asset with new chains re-routes the wire
+        # WITHOUT a code change here. An old provenance (no "tasks") keeps
+        # the DEFAULT_ROUTE semantics — expansion-safe in both directions.
+        heads = self.prov.get("heads") or {}
+        if isinstance(heads, dict):
+            for i, h in enumerate(self.chain_order):
+                for t in (heads.get(h) or {}).get("tasks", []):
+                    self.route[t] = i
+        self.route.setdefault("base", 0)
         self.source_dir = str(source_dir)
         self.cfg = json.load(open(os.path.join(source_dir, "rl_agent_config.json")))
         # per-chain temperatures, from each head's own rl_agent_config.json
