@@ -23,16 +23,18 @@ import torch
 import torch.nn as nn
 
 HEADS_ORDER = ["base", "ft_lang", "ft_gr14_ppo", "ft_tool5v2_ppo", "ft_skill4_ppo",
-               "ft_triage5", "ft_mail8", "ft_sup3"]
-# chain 0 stays base (foreign-slate rule, r31). The new chains carry their
-# families; every wire question of a family now passes route_task and the
-# provenance tasks table re-routes it here at rebuild (combined_agent).
-# NOTE triage moves 0 -> 5: ft_triage5 is the pack champion 0.625 vs base
-# 0.375 (docs/SCORECARD.md row 4). rerank/compact/choose chains are added
-# only after their FT winners pass the pack gate (docs/FINETUNE.md r31-e).
+               "ft_triage5", "ft_mail8", "ft_sup3", "ppo_cho", "ft_cmp2", "ft_rrk3"]
+# chain 0 stays base (foreign-slate rule, r31). v2 adds the three new-family
+# champions as chains 8-10 (pack-gate winners, docs/FINETUNE.md r32-r35):
+#   ppo_cho  choose 0.650 (PPO-on-acted, r32)
+#   ft_cmp2  compact 3/10 vs base 0/10 (r35; teacher ceiling 0/10 — pack
+#            measures the confident-keep side, target was "beat base")
+#   ft_rrk3  rerank 1/10 exact vs base 0/10 (r35 after referent+split fixes)
+# triage moves 0 -> 5 (ft_triage5 pack champion 0.625 vs base 0.375).
 TASK_ROUTE = {"triage": 5, "lang_route": 1, "guardrail": 2, "act_escalate": 2,
               "tool_route": 3, "skill_route": 4,
-              "mail_sort": 6, "supervise": 7}
+              "mail_sort": 6, "supervise": 7,
+              "choose": 8, "compact": 9, "rerank": 10}
 
 
 class CombinedDecisionModel(nn.Module):
