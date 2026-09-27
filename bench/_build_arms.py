@@ -9,8 +9,9 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # Bench models (mlx-serve). q38 = pinned teacher (existing arms);
-# q36 = challenger on :11234; gem = gemma-4-26b-a4b on the dedicated bench
-# server :11235 (must match bench/runner.py MODELS). q05 removed 2026-09-26.
+# q36 = challenger; gem = gemma-4-26b-a4b (replaces removed q05).
+# r37: all three models are resident on the ONE user-run mlx-serve at
+# :11234 — no dedicated bench servers, no swap procedure.
 MODELS = {
     "q38": "ddalcu/Qwen3.8-Flash-Next-MLX-Serve-mixed-4-8bit",
     "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
@@ -19,7 +20,7 @@ MODELS = {
 MODEL_URL = {
     "q38": "http://127.0.0.1:11234/v1",
     "q36": "http://127.0.0.1:11234/v1",
-    "gem": "http://127.0.0.1:11237/v1",
+    "gem": "http://127.0.0.1:11234/v1",
 }
 
 BASE_TMPL = """model:

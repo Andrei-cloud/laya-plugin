@@ -39,10 +39,10 @@ MODELS = {
     "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
     "gem": "mlx-community/gemma-4-26b-a4b-it-4bit",
 }
-MODEL_URL = {
+MODEL_URL = {   # r37: all three models resident on the one user-run server
     "q38": "http://127.0.0.1:11234/v1",
     "q36": "http://127.0.0.1:11234/v1",
-    "gem": "http://127.0.0.1:11237/v1",
+    "gem": "http://127.0.0.1:11234/v1",
 }
 ENGAGEMENT = (
     "\n\nPolicy: before running ANY shell command with destructive potential "
