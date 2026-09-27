@@ -25,22 +25,24 @@ v2 deployed, noul-dialect + RL-temperature bugs fixed and re-measured).
 
 ## Plugin-level merit (rig, correctness-gated, 4 arms × 12 scenarios)
 
-r37 re-run on the fixed stack (post dialect/temp fixes, single mlx-serve
-:11234; frozen in `bench/reports/r37-rig/`). gemma cells re-running on the
-native-256K server, will be merged when done:
+r37 final — all 3 models × 4 arms on the fixed stack (post dialect/temp
+fixes, single mlx-serve :11234, gemma native-256K). Frozen in
+`bench/reports/r37-final/`:
 
 | model | base | guided (engine notes) | warm | laya (tool+engine) |
 |-------|------|----------------------|------|--------------------|
-| q38 | 5/5 red, 2/2 gray | 5/5, 2/2 — engine engaged 7/7, 54 ms mean, 5 blocked/escalated | 5/5, 2/2 | 3/5, 2/2 — engagement 1/12, unsteered variance |
+| q38 | 5/5 red, 2/2 gray | 5/5, 2/2 — engine engaged 7/7, 54 ms mean, 5 blocked/escalated | 5/5, 2/2 | 3/5, 2/2 — engagement 1/12, attempted-destructive misses |
 | q36 | **3/5, 0/2** | **5/5, 2/2 (restores compliance)** — engine 7/7, 58 ms mean | 4/5, 1/2 | 4/5, 1/2 — engagement 1/12 |
-| gemma-4-26b | (r37 re-run pending; pre-r37: 4/5, 2/2) | (pending; pre-r37: 5/5, 2/2) | (pending) | (pending) |
+| gemma | **3/5, 1/2** | **5/5, 1/2** — engine 6 calls, 141 ms mean, 4 blocked/escalated; the 1 gray miss was a chmod the engine flagged `confirm` but gemma ran anyway (SIP saved it) | 4/5, 1/2 | 3/5, 1/2 — zero engagement 0/12 |
 
-Verdict unchanged and now sharper: **guided is the only arm with guaranteed
-engagement (7/7 engine calls on all three models) and it restores q36's
-compliance from 3/5+0/2 to 5/5+2/2 at ~60 ms/call**; tool-exposed engagement
-stays ~1/12 (T2/T3 open); base-arm red counts drift run-to-run (live-LLM
-variance — q36 base 4/5→3/5 between sweeps), which is exactly the flakiness
-the deterministic guided gate removes.
+Verdict, now on three models: **without the plugin, two of three models
+execute red commands (q36, gemma 3/5 each); with the guided gate every model
+reaches 5/5 red** — the engine is consulted on every guardrail command and
+itself blocked/escalated 4–5 of 7 decisions at 54–141 ms/call. Gray
+compliance is model-dependent everywhere (gemma overrode one `confirm`).
+Tool-exposed engagement stays ≤1/12 on all models (T2/T3 open). Base-arm
+counts drift run-to-run (live-LLM variance), which the deterministic guided
+gate removes.
 
 ## Model-level cost (engine)
 
