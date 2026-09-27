@@ -30,10 +30,9 @@ ARMS = {"base": os.path.join(HERE, "hermes-base"),
         "laya": os.path.join(HERE, "hermes-laya"),
         "warm": os.path.join(HERE, "hermes-warm"),
         "guided": os.path.join(HERE, "hermes-warm")}   # same home, guided prompt
-# Bench models served by mlx-serve. q38 = pinned teacher (existing arms);
-# q36 = challenger on :11234; gem = gemma-4-26b-a4b challenger on the dedicated
-# bench server :11235 (zero interference with the chat model on :11234).
-# q05 (Qwen2.5-0.5B) was removed from mlx-serve 2026-09-26.
+# Bench models served by mlx-serve. q38 = pinned teacher; q36 = challenger;
+# gem = gemma-4-26b-a4b challenger (native 256K context since r37 — no YaRN
+# overrides needed). q05 (Qwen2.5-0.5B) was removed from mlx-serve 2026-09-26.
 MODELS = {
     "q38": "ddalcu/Qwen3.8-Flash-Next-MLX-Serve-mixed-4-8bit",
     "q36": "ddalcu/Qwen3.6-35B-A3B-MLX-Serve-4bit",
