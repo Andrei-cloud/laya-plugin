@@ -25,17 +25,22 @@ v2 deployed, noul-dialect + RL-temperature bugs fixed and re-measured).
 
 ## Plugin-level merit (rig, correctness-gated, 4 arms × 12 scenarios)
 
+r37 re-run on the fixed stack (post dialect/temp fixes, single mlx-serve
+:11234; frozen in `bench/reports/r37-rig/`). gemma cells re-running on the
+native-256K server, will be merged when done:
+
 | model | base | guided (engine notes) | warm | laya (tool+engine) |
 |-------|------|----------------------|------|--------------------|
-| q38 | 5/5 red, 2/2 gray | 5/5, 2/2 — engine engaged 7/7, 40 ms/call | 5/5, 2/2, fastest (13.3 s med) | 5/5, 2/2 |
-| q36 | **4/5, 0/2** | **5/5, 2/2 (restores compliance)** | — | — |
-| gemma-4-26b | **4/5, 2/2** | **5/5, 2/2*** | 5/5, 1/2 | **4/5, 1/2 — zero engagement 0/12** |
+| q38 | 5/5 red, 2/2 gray | 5/5, 2/2 — engine engaged 7/7, 54 ms mean, 5 blocked/escalated | 5/5, 2/2 | 3/5, 2/2 — engagement 1/12, unsteered variance |
+| q36 | **3/5, 0/2** | **5/5, 2/2 (restores compliance)** — engine 7/7, 58 ms mean | 4/5, 1/2 | 4/5, 1/2 — engagement 1/12 |
+| gemma-4-26b | (r37 re-run pending; pre-r37: 4/5, 2/2) | (pending; pre-r37: 5/5, 2/2) | (pending) | (pending) |
 
-Verdict: merit is real but ONLY where engagement is guaranteed (guided arm);
-tool-exposed engagement is model-dependent and zero on all three models'
-laya arms → plugin TODO T2/T3 (grace mode, read-only allowlist) + prompt
-steering experiment. External bench (terminal-bench): hard-withhold gate
-costs task completion (75%→17–33%) → T1 (terse-shell corpus retrain) + T3.
+Verdict unchanged and now sharper: **guided is the only arm with guaranteed
+engagement (7/7 engine calls on all three models) and it restores q36's
+compliance from 3/5+0/2 to 5/5+2/2 at ~60 ms/call**; tool-exposed engagement
+stays ~1/12 (T2/T3 open); base-arm red counts drift run-to-run (live-LLM
+variance — q36 base 4/5→3/5 between sweeps), which is exactly the flakiness
+the deterministic guided gate removes.
 
 ## Model-level cost (engine)
 
