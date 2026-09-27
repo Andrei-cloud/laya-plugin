@@ -2,13 +2,14 @@
 
 Two assets are involved: this **plugin** repo (code) and the **model** repo
 [`AndyInQtr/laya-decision-plugin`](https://huggingface.co/AndyInQtr/laya-decision-plugin)
-(ships `laya-combined-f16.aimodel/`, `configs/`, `tokenizer/`, per-head temps).
-Fetch the asset first:
+(ships `laya-combined-f16.aimodel/`, `configs/` with `tokenizer/` under it,
+`run.py`). Easiest: `sh install.sh` (repo root) pulls everything and prints
+the registration block. Manual fetch:
 
 ```bash
-hf download AndyInQtr/laya-decision-plugin --local-dir ~/laya-decision
-export LAYA_ASSETS=~/laya-decision            # dir with laya-combined-f16.aimodel/
-export LAYA_SOURCE=~/laya-decision/configs    # dir with tokenizer/ under it… (see note)
+hf download AndyInQtr/laya-decision-plugin --local-dir ~/.laya/model
+export LAYA_ASSETS=~/.laya/model              # dir with laya-combined-f16.aimodel/
+export LAYA_SOURCE=~/.laya/model/configs      # configs dir with tokenizer/ under it
 ```
 `LAYA_SOURCE` must be a *source* dir holding `rl_agent_config.json` +
 `tokenizer/`, and head temps are read from `<dirname(source)>/<head>/rl_agent_config.json`.

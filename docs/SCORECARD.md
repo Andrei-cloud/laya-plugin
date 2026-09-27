@@ -57,7 +57,8 @@ gate removes.
 
 ## Evidence index
 
-- Wire baselines: `bench/reports/external-20260926/usecase_eval_baseline.json`
-- Rig: `bench/reports/external-20260926/REPORT.md` (+ guard verdict JSONLs)
-- Mail rounds ledger: `laya/docs/FINETUNE.md` r16; gates: `docs/USECASE-COVERAGE.md`
-- Teacher ceilings: `laya/eval/results/mail_teacher_ceiling.json` (0.95), `teacher_ceiling_tool.json` (0.667 — superseded by r15 state-contract lesson)
+- Wire baselines: `bench/reports/r36-dialect-fix/usecase_eval.json`
+- Rig (final): `bench/reports/r37-final/metrics.json` (runs are reproducible,
+  not committed; regenerate with `bench/_build_arms.py` + `runner.py`)
+- Mail rounds ledger: `laya/docs/FINETUNE.md` r16; teacher ceilings:
+  `laya/eval/results/mail_teacher_ceiling.json` (0.95)
