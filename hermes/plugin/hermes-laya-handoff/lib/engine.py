@@ -50,6 +50,12 @@ LANG_QUESTION = {
 _SUPPORTED_TASKS = {"guardrail", "act_escalate", "triage", "lang_route",
                     "tool_route", "skill_route", "base"}
 
+# Route keys the LOADED asset reports (set per-instance from the warmup
+# probe). Class-level default keeps the pre-probe semantics for any object
+# built without _build (unit fixtures): hints are then clamped exactly as
+# before the chain expansion.
+_ENGINE_ROUTES_DEFAULT = frozenset()
+
 
 class Engine:
     """ONE dedicated worker thread drives the agent (invariant from
@@ -63,6 +69,9 @@ class Engine:
 
     _singleton = None
     _slock = None
+    # class-level default so objects built without _build (unit fixtures)
+    # clamp route_task exactly as before the chain expansion
+    _routes = _ENGINE_ROUTES_DEFAULT
 
     def __new__(cls):
         import threading
@@ -187,11 +196,19 @@ class Engine:
                                               "ask_user": "possible risk, confirm with the operator first",
                                               "block": "refuse: destructive or policy-violating"}}}
             a.decide("guardrail", state="warmup", question=q, pad_to=a.L)
-            return a.chain_order, a.L
+            return a.chain_order, a.L, sorted(a.route)
         probe = self._submit(_warm, timeout=600)
         if isinstance(probe, tuple) and probe and probe[0] == "__error__":
             raise RuntimeError(f"engine load failed: {probe[1]}")
         self.chain_order, self.Lmax = list(probe[0]), probe[1]
+        # route keys the LOADED asset actually carries (DEFAULT_ROUTE +
+        # whatever chains were added). A route_task hint naming one of
+        # these is honored even outside _SUPPORTED_TASKS (the static set
+        # predates the mail/supervise/choose/compact/rerank chains and
+        # must not silently drop their questions to chain-0); a hint for a
+        # chain this asset lacks still degrades to the slate heuristic —
+        # the agent's route dict would KeyError (laundered as 529).
+        self._routes = set(probe[2]) if len(probe) > 2 else set()
         self.tool_slate = json.loads(os.environ.get("LAYA_TOOL_SLATE", "[]"))
         self.skill_slate = json.loads(os.environ.get("LAYA_SKILL_SLATE", "[]"))
         self.calls = 0
@@ -299,27 +316,41 @@ class Engine:
         the wire itself carries no head ids — usecases pass `route_task`
         when they know better, else heuristics below, else base."""
         qtype = q.get("type")
+        hint = q.get("route_task")
+        # a hint for a chain THIS asset carries is valid even when the
+        # static _SUPPORTED_TASKS predates the chain (expansion-safe);
+        # anything else keeps the old clamp semantics.
+        supported = hint in self._routes if hint else False
         if qtype == "noul":
             qb = {"type": "choice", "instructions": q["instructions"],
                   "criteria": {"no": "no", "yes": "yes"}}
-            task = "base"
+            # noul used to pin task="base" unconditionally — that kept
+            # ft_sup3's noul head unreachable on the wire even after its
+            # chain shipped. With a carried hint the noul question rides
+            # its family chain; without one, base as always.
+            task = hint if supported else "base"
         elif qtype == "score":
             levels = q["criteria"]
             qb = {"type": "choice", "instructions": q["instructions"],
                   "criteria": {str(i): f"{lv} (level {i} of {len(levels) - 1})"
                                for i, lv in enumerate(levels)}}
-            task = "base"
+            # score rode "base" unconditionally; with a carried family hint
+            # (triage/mail urgency were TRAINED on this exact rendering)
+            # the question belongs on the family chain.
+            task = hint if supported else "base"
         elif qtype == "choice":
             qb = {"type": "choice", "instructions": q["instructions"],
                   "criteria": {k: (v if isinstance(v, str) and v else f"option {k}")
                                for k, v in q["criteria"].items()}}
-            task = q.get("route_task") or self._match_slate(qb["criteria"])
+            task = hint or self._match_slate(qb["criteria"])
             # A hint for a head this asset does not carry must not KeyError
             # through the agent (laundered as 529 by the API layer): fall
             # back to the slate heuristic — foreign slates ride chain-0
             # (base) per the chain rule. Families here MUST mirror
-            # question_for() + the chain-0 pseudo-task "base".
-            if task not in _SUPPORTED_TASKS:
+            # question_for() + the chain-0 pseudo-task "base" — or the
+            # loaded asset must report the route key itself (_routes from
+            # the warmup probe: expansion-safe for chains added later).
+            if task not in _SUPPORTED_TASKS and not supported:
                 task = self._match_slate(qb["criteria"])
         else:
             raise ValueError(f"unknown question type {qtype!r}")

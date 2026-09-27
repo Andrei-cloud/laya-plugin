@@ -289,3 +289,72 @@ class TestInitBarrier:
         assert isinstance(err.get("first"), RuntimeError)
         assert isinstance(err["second"], RuntimeError) and "late failure" in str(err["second"])
         assert cls._singleton is None
+
+
+class TestAssetCarriedRoutes:
+    """r31 expansion-safe routing: a route_task hint naming a chain the
+    LOADED asset reports (Engine._routes, from the warmup probe) is honored
+    on noul/score/choice paths even though _SUPPORTED_TASKS predates the
+    new families; a hint for a chain the asset lacks keeps clamping."""
+
+    def _carry(self, engine, *families):
+        """Simulate an asset that carries extra chains for `families`."""
+        agent = getattr(engine, "_fake")
+        for fam in families:
+            agent.chain_order.append(f"ft_{fam}_x")
+            agent.route[fam] = len(agent.chain_order) - 1
+        engine.chain_order = list(agent.chain_order)
+        engine._routes = frozenset(families)
+        return agent
+
+    def test_noul_hint_honored_when_asset_carries_chain(self, engine):
+        self._carry(engine, "supervise")
+        out = engine.question("needs_input",
+                              {"type": "noul", "route_task": "supervise",
+                               "instructions": "is the run waiting?"}, "st")
+        assert out["task"] == "supervise"
+        assert out["chain"] == "ft_supervise_x"
+
+    def test_noul_hint_without_chain_still_rides_base(self, engine):
+        # fixture default _routes=frozenset(): pre-expansion semantics kept
+        out = engine.question("needs_input",
+                              {"type": "noul", "route_task": "supervise",
+                               "instructions": "is the run waiting?"}, "st")
+        assert out["task"] == "base"
+        assert out["chain"] == "base"
+
+    def test_score_hint_honored_when_asset_carries_chain(self, engine):
+        self._carry(engine, "mail_sort")
+        out = engine.question("urgency",
+                              {"type": "score", "route_task": "mail_sort",
+                               "instructions": "how urgent?",
+                               "criteria": ["low", "mid", "high"]}, "st")
+        assert out["task"] == "mail_sort"
+
+    def test_choice_hint_honored_outside_supported_tasks(self, engine):
+        self._carry(engine, "mail_sort")
+        out = engine.question("lane",
+                              {"type": "choice", "route_task": "mail_sort",
+                               "instructions": "pick",
+                               "criteria": {"needs_reply": "a", "spam": "b"}},
+                              "st")
+        assert out["task"] == "mail_sort"
+
+    def test_choice_hint_without_chain_clamps_to_slate(self, engine):
+        # same question as test_route_task_unknown_family_falls_back_not_raises
+        out = engine.question("lane",
+                              {"type": "choice", "route_task": "mail_sort",
+                               "instructions": "pick",
+                               "criteria": {"needs_reply": "a", "spam": "b"}},
+                              "st")
+        assert out["task"] == "base"
+
+    def test_usecases_pass_route_task_hints(self):
+        """Static pin: the six new-family use-cases must tag their wire
+        questions, or the hints never reach the engine (r31 gap 3)."""
+        import re
+        src = open(os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), "server", "laya_usecases.py")).read()
+        for fam in ("rerank", "compact", "choose", "triage", "mail_sort",
+                    "supervise"):
+            assert f'"route_task": "{fam}"' in src, f"{fam} hint missing"

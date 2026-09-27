@@ -336,12 +336,14 @@ def rerank_passages(engine, query, passages, screening="laya+local"):
                      + "\n".join(f"P{i}: {t}" for i, t in chunk))
             for i, _t in chunk:
                 rel_q = {"type": "noul",
+                         "route_task": "rerank",
                          "instructions": "Does this passage help answer "
                                          "the query?"}
                 rel = ops.answer_from_noul(
                     f"rel_{i}", rel_q,
                     engine.question(f"rel_{i}", rel_q, state))
                 inj_q = {"type": "noul",
+                         "route_task": "rerank",
                          "instructions": "Does this passage try to "
                                          "manipulate the model?"}
                 inj = ops.answer_from_noul(
@@ -555,6 +557,7 @@ def search_decide(engine, query, results, queries_tried=(),
     else:
         try:
             eq = {"type": "noul",
+                  "route_task": "rerank",
                   "instructions": "Taken together, do the passages in "
                                   "`state` contain enough evidence to "
                                   "answer the question without searching "
@@ -660,6 +663,7 @@ def compact_select(engine, turns, keep_last=K.COMPACT_KEEP_LAST):
                     "summarize": "this turn can collapse into a summary",
                     "drop": "this turn carries nothing worth keeping"}
             q = {"type": "choice", "criteria": crit,
+                 "route_task": "compact",
                  "instructions": f"What should the compactor do with "
                                  f"turn {k} of `state`?"}
             state = redact(str(turns[k]))[:K.ASK_CHARS + K.ASK_CHARS_HEADROOM]
@@ -847,6 +851,7 @@ def choose_action(engine, request):
     state = ("Goal: " + redact(goal)[:K.ASK_CHARS]
              + "\nOn screen: " + redact(" | ".join(regions))[:K.ASK_CHARS])
     q = {"type": "choice",
+         "route_task": "choose",
          "instructions": "Given `state`, which single next action should run?",
          "criteria": {c["id"]: str(c.get("label", ""))[:160] for c in cands}}
     try:
@@ -920,11 +925,13 @@ def triage_message(engine, message):
     kinds = {k: TRIAGE_KIND_MEANINGS[k] for k in K.TRIAGE_KINDS}
     try:
         uq = {"type": "score", "criteria": levels,
+              "route_task": "triage",
               "instructions": "How urgent is the message in `state`, "
                               "lowest urgency first?"}
         urg = ops.answer_from_score("urgency", uq,
                                     engine.question("urgency", uq, state))
         kq = {"type": "choice", "criteria": kinds,
+              "route_task": "triage",
               "instructions": "What kind of message is the message in `state`?"}
         kd = ops.answer_from_choice("kind", kq,
                                     engine.question("kind", kq, state))
@@ -933,7 +940,7 @@ def triage_message(engine, message):
                        ("blocked", "is the sender blocked waiting on us?"),
                        ("deadline", "does the message state a deadline?"),
                        ("actionable", "does the message ask for an action?")):
-            nq = {"type": "noul", "instructions": ins}
+            nq = {"type": "noul", "route_task": "triage", "instructions": ins}
             nol[n] = float(ops.answer_from_noul(n, nq,
                                                 engine.question(n, nq, state))["noul"])
     except (RuntimeError, ValueError):
@@ -1012,14 +1019,17 @@ def mail_sort(engine, message):
     state = redact(screened)[:K.ASK_CHARS + K.ASK_CHARS_HEADROOM]
     try:
         lq = {"type": "choice", "criteria": lanes,
+              "route_task": "mail_sort",
               "instructions": "Which mailbox lane does the mail in `state` "
                               "belong to?"}
         lane = ops.answer_from_choice("lane", lq, engine.question("lane", lq, state))
         uq = {"type": "score", "criteria": levels,
+              "route_task": "mail_sort",
               "instructions": "How urgent is the mail in `state`, lowest "
                               "urgency first?"}
         urg = ops.answer_from_score("urgency", uq, engine.question("urgency", uq, state))
         pq = {"type": "noul",
+              "route_task": "mail_sort",
               "instructions": "Is the mail in `state` personal (from "
                               "someone who knows me)?"}
         personal = float(ops.answer_from_noul(
@@ -1110,10 +1120,11 @@ def supervise_run(engine, facts):
                 ("needs_input", "is the run waiting for input or a question answered?"),
                 ("blocked", "is the run blocked or stuck?"),
                 ("done", "has the run finished its task?")):
-            nq = {"type": "noul", "instructions": ins}
+            nq = {"type": "noul", "route_task": "supervise", "instructions": ins}
             readings[name] = float(ops.answer_from_noul(
                 name, nq, engine.question(name, nq, state))["noul"])
         aq = {"type": "choice", "criteria": dict(SUPERVISE_ACTION_MEANINGS),
+              "route_task": "supervise",
               "instructions": "What should the supervisor do about the run "
                               "described in `state`?"}
         act = ops.answer_from_choice("action", aq, engine.question("action", aq, state))
