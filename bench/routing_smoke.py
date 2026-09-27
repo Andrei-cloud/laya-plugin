@@ -87,9 +87,14 @@ def main():
     print("daemon chains:", health.get("chains"))
     if not health.get("warm"):
         sys.exit("SMOKE FAIL: daemon not warm")
-    # the audit must exist for ground truth (deploy script sets LAYA_AUDIT)
-    if not os.path.exists(AUDIT):
-        sys.exit(f"SMOKE FAIL: audit file missing ({AUDIT}) — no ground truth")
+    # ground truth = the daemon's audit JSONL (deploy sets LAYA_AUDIT). The
+    # engine opens it append-on-first-decision, so on a fresh machine it may
+    # not exist yet: create it empty; a daemon auditing to a DIFFERENT path
+    # then fails honestly below ("no audit line appeared").
+    try:
+        open(AUDIT, "a").close()
+    except OSError:
+        sys.exit(f"SMOKE FAIL: cannot create audit file ({AUDIT})")
 
     fails = 0
     for name, q, expect in CASES:
