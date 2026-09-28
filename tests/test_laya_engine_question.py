@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(
 class FakeAgent:
     """Stands in for CombinedAgent: echoes what task/question it was fed."""
     chain_order = ["base", "ft_lang", "ft_gr14_ppo", "ft_tool5v2_ppo",
-                   "ft_skill4_ppo"]
+                   "ft_skill5_ppo"]
     L = 64
 
     def __init__(self):
@@ -118,7 +118,7 @@ class TestQuestionShapes:
     def test_choice_skill_slate_routes_skill_head(self, engine):
         out = engine.question("s", {"type": "choice", "instructions": "pick",
                                     "criteria": {"pdf": "", "docx": ""}}, "st")
-        assert out["chain"] == "ft_skill4_ppo"    # chain 4
+        assert out["chain"] == "ft_skill5_ppo"    # chain 4
 
     def test_choice_lang_slate_routes_lang_head(self, engine):
         """ft_lang trained on the 7-ISO-code slate; the matcher once knew

@@ -173,7 +173,7 @@ class _StubDaemon(BaseHTTPRequestHandler):
         if self.path == "/health":
             self._send(200, {"ok": True, "warm": True,
                              "chains": ["base", "ft_lang", "ft_gr14_ppo",
-                                        "ft_tool5v2_ppo", "ft_skill4_ppo"]})
+                                        "ft_tool5v2_ppo", "ft_skill5_ppo"]})
         else:
             self._send(404, {"error": "nf"})
 
