@@ -747,8 +747,12 @@ def skill_select(engine, state, skills):
                 "stage2_used": False, "status": "ok"}
 
     # stage-2 (§5): kill spurious picks — needs_skill AND per-finalist.
+    # r38 routing fix (SCORECARD row-3 TODO): these noul questions are
+    # trained on the skill chain (dataset_synth_skill_v2 has_skill faces) —
+    # without the hint they rode chain-0 base and the stage-2 rails ran on
+    # the wrong head (wire 0.360 << head 0.615).
     try:
-        ns_q = {"type": "noul",
+        ns_q = {"type": "noul", "route_task": "skill_route",
                 "instructions": "Does this request actually need a skill?"}
         needs = float(ops.answer_from_noul(
             "needs_skill", ns_q, engine.question("needs_skill", ns_q, qstate))["noul"])
